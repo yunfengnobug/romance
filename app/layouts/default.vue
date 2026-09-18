@@ -8,9 +8,21 @@
       <slot />
     </main>
     <footer class="layout__footer">
-      <span>云枫</span>
-      <span class="layout__dot">·</span>
-      <span>仅作展示，图片为占位</span>
+      <p class="layout__copy">
+        <span>云枫</span>
+        <span class="layout__dot">·</span>
+        <span>仅作展示，图片为占位</span>
+      </p>
+      <p class="layout__beian">
+        <a
+          class="layout__beian-link"
+          href="https://beian.miit.gov.cn/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          豫ICP备2023005087号-3
+        </a>
+      </p>
     </footer>
   </div>
 </template>
@@ -32,6 +44,25 @@
     color: $color-muted;
     font-size: 12px;
     letter-spacing: 0.08em;
+  }
+
+  &__copy,
+  &__beian {
+    margin: 0;
+  }
+
+  &__beian {
+    margin-top: 8px;
+    letter-spacing: 0.04em;
+  }
+
+  &__beian-link {
+    color: inherit;
+    text-decoration: none;
+
+    &:hover {
+      color: $color-maple;
+    }
   }
 
   &__dot {
