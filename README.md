@@ -67,43 +67,36 @@ NUXT_PUBLIC_ADMIN_API_BASE=https://admin.yzre.cn
 
 ## 婚纱照接口
 
-均相对于 `adminApiBase`（公开读，不带 cookie）。**admin 侧尚未落地时请求会 404**，页面显示错误并允许重试；romance 不会为此自建数据库。
-
-优先：
-
-| 用途 | 方法 | 路径 |
-| --- | --- | --- |
-| 整本相册 | GET | `/api/public/wedding/album` |
-
-期望信封：
-
-```json
-{
-  "code": 0,
-  "data": {
-    "cover": "https://…",
-    "categories": [
-      { "id": 1, "slug": "outdoor", "label": "外景", "sort_order": 1 }
-    ],
-    "photos": [
-      { "id": 10, "url": "https://…", "category_id": 1, "sort_order": 1 }
-    ]
-  }
-}
-```
-
-`categories` 由后台 CRUD 管理（外景 / 室内 / 绿野 / …），照片用 `category_id` 或 `category_slug` 归组。Tab = 「全部」+ `categories`。
-
-若 album 暂未提供，会再试：
+均相对于 `adminApiBase`（公开读，不带 cookie）。romance 不连库。admin 分类 CRUD 与公开接口由**单独仓库**落地；本站按下面合约等待，404 或空列表显示空相册，不回退 Unsplash，也不使用 初修/精修/底图。
 
 | 用途 | 方法 | 路径 |
 | --- | --- | --- |
 | 分类列表 | GET | `/api/public/wedding/categories` |
 | 照片列表 | GET | `/api/public/wedding/photos` |
 
-admin 需要补齐：分类 CRUD、照片归类、上述公开读接口（共用现有 MySQL，不必给 romance `DATABASE_URL`）。
+期望信封（`data` 可以是数组，或带 `categories` / `photos` 的对象）：
 
-仅当设置了 `NUXT_PUBLIC_WEDDING_USE_MOCK` 时才使用 `data/wedding.ts` 里的示例分类/照片。生产失败显示错误，不会默默用 Unsplash。
+```json
+{
+  "code": 0,
+  "data": [
+    { "id": 1, "slug": "outdoor", "label": "外景", "sort_order": 1 }
+  ]
+}
+```
+
+```json
+{
+  "code": 0,
+  "data": [
+    { "id": 10, "url": "https://…", "category_id": 1, "sort_order": 1 }
+  ]
+}
+```
+
+`label` 用于 tab 文案。照片用 `category_id` 或 `category_slug` 归组。Tab = 「全部」+ 接口分类。路径若在 admin PR 里微调，再对齐客户端即可。
+
+仅当设置了 `NUXT_PUBLIC_WEDDING_USE_MOCK` 时才使用 `data/wedding.ts` 里的示例分类/照片。网络错误显示说明并允许重试。
 
 ## 技术栈与模块
 

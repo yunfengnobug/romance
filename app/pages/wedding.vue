@@ -5,7 +5,7 @@ useHead({
   title: '婚纱照 · 云枫',
 })
 
-const emptyAlbum = () => ({ cover: '', categories: [], photos: [] })
+const emptyAlbum = () => ({ cover: '', categories: [], photos: [], waiting: false })
 
 const album = ref(emptyAlbum())
 const loading = ref(true)
@@ -17,19 +17,19 @@ const previewSrc = ref('')
 // 封面：接口 cover，否则第一张照片
 const coverSrc = computed(() => pickWeddingCover(album.value))
 
-// Tab = 全部 + 后台分类，不在前端写死分组名
+// Tab = 全部 + 后台分类 label，不在前端写死分组名
 const groups = computed(() => [
   { key: 'all', label: '全部' },
   ...album.value.categories.map((item: any) => ({
-    key: item.slug,
+    key: item.tabKey || item.id || item.slug,
     label: item.label,
   })),
 ])
 
-// 按当前分类过滤；全部分组按接口顺序
+// 按当前分类过滤（对照 category id 或 slug）
 const filteredPhotos = computed(() => {
   if (activeGroup.value === 'all') return album.value.photos
-  return album.value.photos.filter((item: any) => item.categoryKey === activeGroup.value)
+  return album.value.photos.filter((item: any) => photoMatchesGroup(item, activeGroup.value))
 })
 
 // 切换相册分组
@@ -104,6 +104,10 @@ onMounted(() => {
       <p v-if="usingMock" class="wedding__banner">
         正在显示本地示例。线上分类由后台配置，不使用这份 mock 分组名。
       </p>
+      <p v-else-if="album.waiting" class="wedding__banner">
+        正在等待 admin 公开接口：<code>/api/public/wedding/categories</code> 与
+        <code>/api/public/wedding/photos</code>。就绪后会出现「全部」和后台配置的分类。
+      </p>
       <div v-if="groups.length > 1" class="wedding__tabs" role="tablist">
         <button
           v-for="group in groups"
@@ -133,7 +137,7 @@ onMounted(() => {
           <img :src="photo.src" :alt="photo.alt" loading="lazy" />
         </button>
       </div>
-      <p v-else class="wedding__empty">
+      <p v-else-if="!album.waiting" class="wedding__empty">
         {{ activeGroup === 'all' ? '相册还是空的。' : '这一组还没有照片，稍后会补上。' }}
       </p>
     </section>
@@ -222,6 +226,10 @@ onMounted(() => {
     font-size: 12px;
     line-height: 1.5;
     text-align: center;
+
+    code {
+      font-size: 11px;
+    }
   }
 
   &__tabs {

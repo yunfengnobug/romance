@@ -1,21 +1,21 @@
-// 婚纱照对接 admin 公开接口。分类由后台配置，前端不写死 外景/室内，也不使用 yunfeng 的 draft/final/base。
+// 婚纱照对接 admin 公开接口。分类由后台配置，前端不写死分组，也不使用 yunfeng 的 draft/final/base。
 //
-// 约定（admin 尚未落地时以此为准，romance 不连库）：
-//   GET {adminApiBase}/api/public/wedding/album
+// 约定（admin 单独落地，路径若微调可再对齐）：
+//   GET {adminApiBase}/api/public/wedding/categories
+//   GET {adminApiBase}/api/public/wedding/photos
 //   {
 //     code: 0,
-//     data: {
-//       cover?: string,
-//       categories: [{ id, slug | name, label | name, sort_order }],
-//       photos: [{ id, url, category_id | category_slug, sort_order, alt? }]
-//     }
+//     data: [{ id, slug?, label, sort_order }]
+//     或 { categories: [...] } / { photos: [...] }
 //   }
-// 若 album 尚未提供，会再试：
-//   GET /api/public/wedding/categories
-//   GET /api/public/wedding/photos
-// Tab = 「全部」+ data.categories（按 sort_order）。公开接口不带 cookie。
+// 照片字段：{ id, url, category_id | category_slug, sort_order, alt? }
+// Tab = 「全部」+ categories.label。公开接口不带 cookie。
+// 接口未合并（404）或空列表：空相册，不回退 Unsplash。
 
 import { adminApiBase, pickList, pickUrl, readErrorMessage, unwrapPayload } from './momentsApi'
+
+const CATEGORIES_PATH = '/api/public/wedding/categories'
+const PHOTOS_PATH = '/api/public/wedding/photos'
 
 /** 是否强制走仓库 mock（调试用） */
 export function weddingUseMock(): boolean {
@@ -23,26 +23,23 @@ export function weddingUseMock(): boolean {
   return raw === '1' || raw === 'true' || raw === 'yes'
 }
 
-/** 拉整本相册：分类 + 照片。缺 album 时回退拆开的两个公开接口。 */
+/** 并行拉分类 + 照片。404 / 空列表当成等待态，不抛错。 */
 export async function fetchWeddingAlbum() {
-  try {
-    return mapWeddingAlbum(await weddingPublicGet('/api/public/wedding/album'))
-  }
-  catch (err: any) {
-    if (!isNotFound(err)) throw err
-    try {
-      const [categoriesRaw, photosRaw] = await Promise.all([
-        weddingPublicGet('/api/public/wedding/categories'),
-        weddingPublicGet('/api/public/wedding/photos'),
-      ])
-      return mapWeddingAlbum({
-        categories: coerceList(categoriesRaw, 'categories'),
-        photos: coerceList(photosRaw, 'photos'),
-      })
-    }
-    catch (splitErr: any) {
-      throw wrapWeddingError(isNotFound(splitErr) ? err : splitErr)
-    }
+  const [categoriesRes, photosRes] = await Promise.all([
+    weddingPublicGet(CATEGORIES_PATH),
+    weddingPublicGet(PHOTOS_PATH),
+  ])
+
+  const hard = [categoriesRes, photosRes].find((item: any) => item.error && !item.missing)
+  if (hard) throw hard.error
+
+  const waiting = categoriesRes.missing && photosRes.missing
+  return {
+    ...mapWeddingAlbum({
+      categories: categoriesRes.missing ? [] : coerceList(categoriesRes.data, 'categories'),
+      photos: photosRes.missing ? [] : coerceList(photosRes.data, 'photos'),
+    }),
+    waiting,
   }
 }
 
@@ -55,7 +52,7 @@ export function mapWeddingAlbum(raw: any) {
 
   const categories = pickCategories(data)
     .map(mapWeddingCategory)
-    .filter((item: any) => item.slug && item.label)
+    .filter((item: any) => item.label && (item.id || item.slug))
     .sort((a: any, b: any) => a.sort_order - b.sort_order)
 
   const photos = pickPhotos(data)
@@ -67,6 +64,7 @@ export function mapWeddingAlbum(raw: any) {
     cover: pickCover(data, photos),
     categories,
     photos,
+    waiting: false,
   }
 }
 
@@ -79,6 +77,13 @@ export function albumFromMock(categories: any[], photos: any[]) {
 export function pickWeddingCover(album: any): string {
   if (!album) return ''
   return album.cover || album.photos?.[0]?.src || ''
+}
+
+/** 当前 tab 是否包含这张照片（id 或 slug 都能对上） */
+export function photoMatchesGroup(photo: any, key: string): boolean {
+  if (!photo || key === 'all') return true
+  const keys = [photo.categoryId, photo.categorySlug, photo.categoryKey].filter(Boolean).map(String)
+  return keys.includes(String(key))
 }
 
 function unwrapAlbumPayload(raw: any): any {
@@ -103,22 +108,27 @@ function pickPhotos(data: any): any[] {
 }
 
 function coerceList(raw: any, key: string): any[] {
+  if (raw == null) return []
+  if (Array.isArray(raw)) return raw
   const data = unwrapAlbumPayload(raw)
   if (Array.isArray(data)) return data
   if (Array.isArray(data?.[key])) return data[key]
-  return pickList(data)
+  const listed = pickList(data)
+  if (listed.length) return listed
+  return []
 }
 
 function mapWeddingCategory(item: any) {
   const row = item && typeof item === 'object' ? item : {}
   const id = row.id ?? row._id ?? ''
-  const slug = row.slug || row.name || row.key || (id !== '' ? String(id) : '')
+  const slug = row.slug || row.name || row.key || ''
   const label = row.label || row.title || row.name || slug
   return {
-    id: id !== '' ? String(id) : String(slug),
-    slug: String(slug),
-    label: String(label),
+    id: id !== '' ? String(id) : '',
+    slug: String(slug || (id !== '' ? String(id) : '')),
+    label: String(label || ''),
     sort_order: Number(row.sort_order ?? row.sortOrder ?? 0),
+    tabKey: id !== '' ? String(id) : String(slug),
   }
 }
 
@@ -126,18 +136,20 @@ function mapWeddingPhoto(item: any, categories: any[]) {
   const row = item && typeof item === 'object' ? item : {}
   const src = pickUrl(row)
   const categoryId = row.category_id ?? row.categoryId ?? row.category?.id
-  const categorySlug = row.category_slug ?? row.categorySlug ?? row.category?.slug ?? row.group ?? row.category
+  const categorySlug = row.category_slug ?? row.categorySlug ?? row.category?.slug ?? row.group
+  const slugValue = categorySlug != null && typeof categorySlug !== 'object' ? String(categorySlug) : ''
   const matched = categories.find((cat: any) => {
-    if (categoryId != null && String(cat.id) === String(categoryId)) return true
-    if (categorySlug != null && String(cat.slug) === String(categorySlug)) return true
+    if (categoryId != null && cat.id && String(cat.id) === String(categoryId)) return true
+    if (slugValue && cat.slug && String(cat.slug) === slugValue) return true
     return false
   })
-  const categoryKey = matched?.slug || (categorySlug != null && typeof categorySlug !== 'object' ? String(categorySlug) : '')
   return {
     id: String(row.id ?? row._id ?? src),
     src,
     alt: row.alt || row.title || matched?.label || '婚纱照',
-    categoryKey,
+    categoryId: categoryId != null ? String(categoryId) : matched?.id || '',
+    categorySlug: slugValue || matched?.slug || '',
+    categoryKey: matched?.tabKey || (categoryId != null ? String(categoryId) : slugValue),
     sort_order: Number(row.sort_order ?? row.sortOrder ?? 0),
   }
 }
@@ -160,21 +172,23 @@ function looksLikeYunfengBuckets(data: any): boolean {
 async function weddingPublicGet(path: string) {
   const url = `${adminApiBase()}${path}`
   try {
-    return await $fetch(url, {
+    const data = await $fetch(url, {
       method: 'GET',
       credentials: 'omit',
       headers: { Accept: 'application/json' },
     })
+    return { data, missing: false, error: null }
   }
   catch (err: any) {
-    throw wrapWeddingError(err)
+    if (isNotFound(err)) return { data: null, missing: true, error: wrapWeddingError(err) }
+    return { data: null, missing: false, error: wrapWeddingError(err) }
   }
 }
 
 function wrapWeddingError(err: any) {
   const status = err?.statusCode || err?.status
   const message = status === 404
-    ? '后台尚未提供婚纱照公开接口。需要 GET /api/public/wedding/album（或 categories + photos）。'
+    ? '后台尚未提供婚纱照公开接口。需要 GET /api/public/wedding/categories 与 /api/public/wedding/photos。'
     : readErrorMessage(err)
   const wrapped: any = new Error(message)
   wrapped.statusCode = status
