@@ -5,6 +5,17 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits(['preview', 'delete'])
+const avatarRef = ref<HTMLElement | null>(null)
+
+const avatarWidth = usePhotoDisplayWidth(avatarRef, {
+  fallback: QINIU_FALLBACK_AVATAR,
+  estimate: estimateMomentsPostAvatarCssWidth,
+})
+
+const avatarSrc = computed(() => buildPhotoAvatarUrl(props.post.avatar, avatarWidth.value))
+
+const videoUrl = computed(() => String(props.post.video || '').trim())
+const videoCover = computed(() => String(props.post.videoCover || props.post.poster || '').trim())
 
 // 点赞名单拼成一行
 const likeText = computed(() => {
@@ -25,11 +36,17 @@ function onDelete() {
 
 <template>
   <article class="moment-post">
-    <img :src="post.avatar" :alt="post.author" class="moment-post__avatar" />
+    <img
+      ref="avatarRef"
+      :src="avatarSrc"
+      :alt="post.author"
+      class="moment-post__avatar"
+    />
     <div class="moment-post__body">
       <h3 class="moment-post__name">{{ post.author }}</h3>
       <p v-if="post.text" class="moment-post__text">{{ post.text }}</p>
-      <ImageGrid :images="post.images || []" @preview="onPreview" />
+      <MomentVideo v-if="videoUrl" :src="videoUrl" :poster="videoCover" />
+      <ImageGrid v-else-if="post.images && post.images.length" :images="post.images" @preview="onPreview" />
       <div class="moment-post__meta">
         <span>{{ post.time }}</span>
         <span v-if="post.location" class="moment-post__loc">{{ post.location }}</span>

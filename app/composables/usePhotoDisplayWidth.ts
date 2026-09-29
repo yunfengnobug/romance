@@ -78,3 +78,50 @@ export function estimateWeddingColumnCssWidth(): number {
   const gap = wide ? 14 : 10
   return Math.max(0, (inner - gap * (cols - 1)) / cols)
 }
+
+export const MOMENTS_PHONE_MAX = 680
+
+/** 朋友圈手机壳宽度：页面最大 680，与 $moments-width 一致 */
+export function estimateMomentsPhoneCssWidth(): number {
+  if (typeof window === 'undefined') return 0
+  return Math.min(window.innerWidth, MOMENTS_PHONE_MAX)
+}
+
+/** 封面通栏 */
+export function estimateMomentsCoverCssWidth(): number {
+  return estimateMomentsPhoneCssWidth()
+}
+
+/** 封面右下角头像 72px */
+export function estimateMomentsCoverAvatarCssWidth(): number {
+  return 72
+}
+
+/** 动态流头像 42px */
+export function estimateMomentsPostAvatarCssWidth(): number {
+  return 42
+}
+
+/**
+ * 朋友圈宫格单格 CSS 宽。对齐 ImageGrid：1 张 max 240，2/4 张 max 248 两列，其余 max 372 三列。
+ * 动态正文约等于手机壳减去左右 16 + 头像 42 + 间距 10。
+ */
+export function estimateMomentsGridCellCssWidth(count: number): number {
+  if (typeof window === 'undefined') return 0
+  const n = Math.max(1, Number(count) || 1)
+  const cols = n === 1 ? 1 : (n === 2 || n === 4) ? 2 : 3
+  const maxW = cols === 1 ? 240 : cols === 2 ? 248 : 372
+  const body = Math.max(0, estimateMomentsPhoneCssWidth() - 32 - 42 - 10)
+  const gap = 4
+  const gridW = Math.min(maxW, body)
+  if (cols === 1) return gridW
+  return Math.max(0, (gridW - gap * (cols - 1)) / cols)
+}
+
+/** 宫格 / 视频卡片：优先量第一个格子 */
+export function measureGridCellCssWidth(gridEl: Element | null | undefined): number {
+  if (!gridEl) return 0
+  const cell = gridEl.querySelector('.image-grid__cell, .moment-video')
+  if (cell) return measureCssWidth(cell)
+  return measureCssWidth(gridEl)
+}
