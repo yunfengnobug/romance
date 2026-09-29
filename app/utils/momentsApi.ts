@@ -271,8 +271,12 @@ export function readErrorMessage(err: any): string {
   const fromBody = readMessage(err?.data) || readMessage(err?.response?._data)
   if (fromBody) return fromBody
   if (err?.statusMessage && err.statusMessage !== 'Fetch Error') return err.statusMessage
-  if (err?.message && !String(err.message).startsWith('[GET]') && !String(err.message).startsWith('[POST]')) {
-    return err.message
+  const raw = String(err?.message || err?.cause?.message || '')
+  if (/Failed to fetch|NetworkError|CORS|ERR_FAILED|no response/i.test(raw)) {
+    return '无法连接后台，请检查地址或跨域设置'
+  }
+  if (raw && !raw.startsWith('[GET]') && !raw.startsWith('[POST]') && !raw.startsWith('[DELETE]')) {
+    return raw
   }
   const status = err?.statusCode || err?.status
   if (status === 401) return '登录已失效，请重新登录'
