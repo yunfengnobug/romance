@@ -3,6 +3,9 @@ const props = defineProps<{
   src: string
 }>()
 
+// 灯箱展示图：七牛域名套 1600w webp，外链原样
+const displaySrc = computed(() => buildPhotoPreviewUrl(props.src))
+
 const emit = defineEmits(['close'])
 
 // 关闭全屏预览
@@ -30,7 +33,7 @@ onUnmounted(() => {
       <button type="button" class="lightbox__close" aria-label="关闭预览" @click="close">
         ×
       </button>
-      <img :src="props.src" alt="预览图片" class="lightbox__img" @click.stop />
+      <img :src="displaySrc" alt="预览图片" class="lightbox__img" @click.stop />
     </div>
   </Teleport>
 </template>
