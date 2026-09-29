@@ -9,6 +9,8 @@ export default defineNuxtConfig({
       adminApiBase: 'https://admin.yzre.cn',
       // 设为 1/true 时朋友圈强制走仓库 mock（调试用）
       momentsUseMock: '',
+      // 设为 1/true 时婚纱照强制走仓库 mock（调试用，生产不要开）
+      weddingUseMock: '',
     },
   },
   app: {
