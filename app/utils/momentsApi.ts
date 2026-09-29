@@ -210,15 +210,16 @@ export async function fetchMomentsMe() {
   }
 }
 
-/** 朋友圈短视频上限：与 admin prepare 对齐（fsizeLimit 50MB，时长 60 秒） */
+/** 朋友圈短视频上限：与已合入的 admin #14 对齐（fsizeLimit 80MB，时长 60 秒） */
 export const MOMENT_MAX_IMAGES = 9
-export const MOMENT_VIDEO_MAX_BYTES = 50 * 1024 * 1024
+export const MOMENT_VIDEO_MAX_BYTES = 80 * 1024 * 1024
 export const MOMENT_VIDEO_MAX_SECONDS = 60
 export const MOMENT_VIDEO_MIMES = [
   'video/mp4',
   'video/quicktime',
   'video/webm',
   'video/x-m4v',
+  'video/3gpp',
 ]
 
 /** 申请一张图的七牛上传凭证，再直传 */
@@ -278,18 +279,20 @@ export async function createMomentPost(payload: {
     location: payload.location || '',
   }
   if (payload.video) {
-    const video: any = {
-      url: payload.video,
-      cover: payload.videoCover || '',
+    // admin #14 最终：video 为 URL 字符串；封面 videoCover / cover / poster
+    body.video = payload.video
+    body.videoUrl = payload.video
+    body.videoCover = payload.videoCover || ''
+    body.cover = payload.videoCover || ''
+    body.poster = payload.videoCover || ''
+    if (payload.videoKey) {
+      body.videoKey = payload.videoKey
+      body.key = payload.videoKey
     }
-    if (payload.videoKey) video.key = payload.videoKey
-    if (payload.videoDuration && payload.videoDuration > 0) video.duration = payload.videoDuration
-    // admin #14：嵌套 video，或扁平 videoUrl / cover / duration
-    body.video = video
-    body.videoUrl = video.url
-    body.cover = video.cover
-    if (video.key) body.videoKey = video.key
-    if (video.duration) body.duration = video.duration
+    if (payload.videoDuration && payload.videoDuration > 0) {
+      body.videoDuration = payload.videoDuration
+      body.duration = payload.videoDuration
+    }
   }
   const raw = await adminFetch('/api/moments/posts', {
     method: 'POST',
