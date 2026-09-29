@@ -1,5 +1,5 @@
-// 以下为本地展示用 mock 数据，后续会替换为真实接口。
-// 图片均为网络占位图，可直接换成真实地址。
+// 仅在 NUXT_PUBLIC_MOMENTS_USE_MOCK=1，或开发环境接口不可达时作为回退。
+// 生产朋友圈以 admin 公开接口为准，不要假设字段与婚纱照 draft/final 相同。
 
 export const momentsProfile: any = {
   nickname: '云枫',

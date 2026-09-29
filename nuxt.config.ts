@@ -3,6 +3,14 @@ export default defineNuxtConfig({
   compatibilityDate: '2026-09-18',
   devtools: { enabled: false },
   css: ['~/assets/styles/main.scss'],
+  runtimeConfig: {
+    public: {
+      // 后台 API 根地址，本地可用 NUXT_PUBLIC_ADMIN_API_BASE 覆盖
+      adminApiBase: 'https://admin.yzre.cn',
+      // 设为 1/true 时朋友圈强制走仓库 mock（调试用）
+      momentsUseMock: '',
+    },
+  },
   app: {
     head: {
       title: '云枫',
@@ -14,7 +22,7 @@ export default defineNuxtConfig({
       meta: [
         {
           name: 'description',
-          content: '云枫的个人站点：朋友圈与婚纱照。仅作展示，图片为占位。',
+          content: '云枫的个人站点：朋友圈与婚纱照。',
         },
       ],
       link: [
