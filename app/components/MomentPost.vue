@@ -1,9 +1,10 @@
 <script setup lang="ts">
 const props = defineProps<{
   post: any
+  canDelete?: boolean
 }>()
 
-const emit = defineEmits(['preview'])
+const emit = defineEmits(['preview', 'delete'])
 
 // 点赞名单拼成一行
 const likeText = computed(() => {
@@ -14,6 +15,11 @@ const likeText = computed(() => {
 // 把点击的图片交给页面打开灯箱
 function onPreview(src: string) {
   emit('preview', src)
+}
+
+// 删除前先确认，避免误触
+function onDelete() {
+  if (window.confirm('删除这条动态？')) emit('delete', props.post)
 }
 </script>
 
@@ -27,6 +33,14 @@ function onPreview(src: string) {
       <div class="moment-post__meta">
         <span>{{ post.time }}</span>
         <span v-if="post.location" class="moment-post__loc">{{ post.location }}</span>
+        <button
+          v-if="canDelete"
+          type="button"
+          class="moment-post__delete"
+          @click="onDelete"
+        >
+          删除
+        </button>
       </div>
       <div v-if="likeText || (post.comments && post.comments.length)" class="moment-post__panel">
         <p v-if="likeText" class="moment-post__likes">
@@ -95,6 +109,16 @@ function onPreview(src: string) {
 
   &__loc {
     color: $color-wechat;
+  }
+
+  &__delete {
+    margin-left: auto;
+    border: 0;
+    background: transparent;
+    padding: 0;
+    font-size: 12px;
+    color: $color-wechat;
+    cursor: pointer;
   }
 
   &__panel {

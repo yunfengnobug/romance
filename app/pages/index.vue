@@ -23,7 +23,7 @@ useHead({
         />
         <div class="home__card-body">
           <h2>朋友圈</h2>
-          <p>看看最近的生活切片。展示用动态，稍后会接上真实接口。</p>
+          <p>看看最近的生活切片。登录后可以发朋友圈。</p>
           <span class="home__card-go">进入 →</span>
         </div>
       </NuxtLink>
