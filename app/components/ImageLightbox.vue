@@ -3,8 +3,17 @@ const props = defineProps<{
   src: string
 }>()
 
-// 灯箱展示图：七牛域名套 1600w webp，外链原样
-const displaySrc = computed(() => buildPhotoPreviewUrl(props.src))
+const rootRef = ref<HTMLElement | null>(null)
+
+// 灯箱请求宽 ≈ 视口内容区 × dpr × 1.2，步进封顶
+const previewWidth = usePhotoDisplayWidth(rootRef, {
+  fallback: QINIU_FALLBACK_PREVIEW,
+  estimate: measureViewportCssWidth,
+  measure: measureContentCssWidth,
+})
+
+// 灯箱展示图：七牛域名按实测宽出 webp，外链原样
+const displaySrc = computed(() => buildPhotoPreviewUrl(props.src, previewWidth.value))
 
 const emit = defineEmits(['close'])
 
@@ -29,7 +38,7 @@ onUnmounted(() => {
 
 <template>
   <Teleport to="body">
-    <div class="lightbox" role="dialog" aria-modal="true" @click="close">
+    <div ref="rootRef" class="lightbox" role="dialog" aria-modal="true" @click="close">
       <button type="button" class="lightbox__close" aria-label="关闭预览" @click="close">
         ×
       </button>
