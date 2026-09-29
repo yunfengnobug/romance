@@ -163,17 +163,15 @@ onMounted(async () => {
           type="button"
           class="moments__camera"
           :title="loggedIn ? '发朋友圈' : '登录后发朋友圈'"
+          :aria-label="loggedIn ? '发朋友圈' : '登录后发朋友圈'"
           @click="onTapPublish"
         >
-          <template v-if="loggedIn">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path
-                fill="currentColor"
-                d="M9.2 5.2 8 7H5.8C4.8 7 4 7.8 4 8.8v8.4C4 18.2 4.8 19 5.8 19h12.4c1 0 1.8-.8 1.8-1.8V8.8c0-1-.8-1.8-1.8-1.8H16l-1.2-1.8H9.2zM12 16.2A3.4 3.4 0 1 1 12 9.4a3.4 3.4 0 0 1 0 6.8z"
-              />
-            </svg>
-          </template>
-          <span v-else>发朋友圈</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              fill="currentColor"
+              d="M9.2 5.2 8 7H5.8C4.8 7 4 7.8 4 8.8v8.4C4 18.2 4.8 19 5.8 19h12.4c1 0 1.8-.8 1.8-1.8V8.8c0-1-.8-1.8-1.8-1.8H16l-1.2-1.8H9.2zM12 16.2A3.4 3.4 0 1 1 12 9.4a3.4 3.4 0 0 1 0 6.8z"
+            />
+          </svg>
         </button>
         <div class="moments__identity">
           <div class="moments__who">
