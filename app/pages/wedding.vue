@@ -14,8 +14,8 @@ const usingMock = ref(false)
 const activeGroup = ref('all')
 const previewSrc = ref('')
 
-// 封面：接口 cover，否则第一张照片
-const coverSrc = computed(() => pickWeddingCover(album.value))
+// 封面：接口 cover，否则第一张照片（展示时再套七牛限宽，不改原 URL）
+const coverSrc = computed(() => buildPhotoHeroUrl(pickWeddingCover(album.value)))
 
 // Tab = 全部 + 后台分类 label，不在前端写死分组名
 const groups = computed(() => [
@@ -37,7 +37,7 @@ function selectGroup(key: string) {
   activeGroup.value = key
 }
 
-// 打开图片预览
+// 打开图片预览（传原图 URL，灯箱展示时再套 1600w webp）
 function openPreview(src: string) {
   previewSrc.value = src
 }
@@ -134,7 +134,7 @@ onMounted(() => {
           class="wedding__cell"
           @click="openPreview(photo.src)"
         >
-          <img :src="photo.src" :alt="photo.alt" loading="lazy" />
+          <img :src="buildPhotoThumbUrl(photo.src)" :alt="photo.alt" loading="lazy" />
         </button>
       </div>
       <p v-else-if="!album.waiting" class="wedding__empty">
