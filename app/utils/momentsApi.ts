@@ -109,7 +109,7 @@ export function mapMomentPost(raw: any, fallbackAvatar = '') {
       || user?.name
       || (typeof post.author === 'string' ? post.author : '')
       || post.username
-      || '云枫',
+      || '我们的故事',
     avatar:
       pickUrl(post.avatar)
       || pickUrl(post.authorAvatar)
