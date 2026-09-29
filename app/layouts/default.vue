@@ -9,7 +9,7 @@
     </main>
     <footer class="layout__footer">
       <p class="layout__copy">
-        <span>朝心</span>
+        <span>我们的故事</span>
         <span class="layout__dot">·</span>
         <span>王俊杰与李朝新</span>
       </p>

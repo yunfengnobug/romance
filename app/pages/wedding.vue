@@ -2,7 +2,7 @@
 import { weddingCategories as mockCategories, weddingHero, weddingPhotos as mockPhotos, weddingStory } from '~~/data/wedding'
 
 useHead({
-  title: '婚纱照 · 朝心',
+  title: '婚纱照 · 我们的故事',
 })
 
 const emptyAlbum = () => ({ cover: '', categories: [], photos: [], waiting: false })

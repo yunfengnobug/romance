@@ -25,7 +25,7 @@ function isActive(path: string) {
             d="M16 4.5c.4 2.6 1.2 5.2 2.2 7.4 2.3-.8 4.8-1.6 7.3-1.4-1.6 2.1-3.4 3.6-5.3 4.7 1.6 1.5 3.6 2.8 5.8 3.6-2.6.6-5.2.4-7.4-.2.2 2.5.6 5.2.9 7.9-1.2-1.8-2.3-3.7-3.5-5.4-1.2 1.7-2.3 3.6-3.5 5.4.3-2.7.7-5.4.9-7.9-2.2.6-4.8.8-7.4.2 2.2-.8 4.2-2.1 5.8-3.6-1.9-1.1-3.7-2.6-5.3-4.7 2.5-.2 5 .6 7.3 1.4 1-2.2 1.8-4.8 2.2-7.4z"
           />
         </svg>
-        <span>朝心</span>
+        <span>我们的故事</span>
       </NuxtLink>
       <nav class="site-header__nav">
         <NuxtLink
@@ -69,10 +69,11 @@ function isActive(path: string) {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 600;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.08em;
     color: $color-ink;
+    white-space: nowrap;
   }
 
   &__leaf {
@@ -110,8 +111,8 @@ function isActive(path: string) {
 @media (max-width: 480px) {
   .site-header {
     &__brand {
-      letter-spacing: 0.12em;
-      font-size: 16px;
+      letter-spacing: 0.04em;
+      font-size: 14px;
     }
 
     &__link {

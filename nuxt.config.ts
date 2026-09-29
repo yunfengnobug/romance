@@ -1,4 +1,4 @@
-// 朝心站点配置：Nuxt 4，不额外装 Content / Fireclaw 等模块
+// 我们的故事站点配置：Nuxt 4，不额外装 Content / Fireclaw 等模块
 export default defineNuxtConfig({
   compatibilityDate: '2026-09-18',
   devtools: { enabled: false },
@@ -15,7 +15,7 @@ export default defineNuxtConfig({
   },
   app: {
     head: {
-      title: '朝心',
+      title: '我们的故事',
       htmlAttrs: {
         lang: 'zh-CN',
       },
@@ -24,7 +24,7 @@ export default defineNuxtConfig({
       meta: [
         {
           name: 'description',
-          content: '朝心：王俊杰与李朝新的婚礼与生活。',
+          content: '我们的故事：王俊杰与李朝新的婚礼与生活。',
         },
       ],
       link: [

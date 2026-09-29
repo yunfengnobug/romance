@@ -1,6 +1,6 @@
 <script setup lang="ts">
 useHead({
-  title: '朝心',
+  title: '我们的故事',
 })
 </script>
 
@@ -8,7 +8,7 @@ useHead({
   <div class="home">
     <section class="home__hero">
       <p class="home__eyebrow">王俊杰 · 李朝新</p>
-      <h1 class="home__title">朝心</h1>
+      <h1 class="home__title">我们的故事</h1>
       <p class="home__lead">
         这是王俊杰与李朝新的小站。朋友圈记下日常，婚纱照留下并肩的光。
       </p>
@@ -65,9 +65,9 @@ useHead({
 
   &__title {
     margin: 0 0 16px;
-    font-size: 48px;
+    font-size: 36px;
     font-weight: 600;
-    letter-spacing: 0.28em;
+    letter-spacing: 0.16em;
     line-height: 1.1;
     color: $color-ink;
 
@@ -145,7 +145,7 @@ useHead({
     padding-top: 48px;
 
     &__title {
-      font-size: 56px;
+      font-size: 48px;
     }
 
     &__entries {
