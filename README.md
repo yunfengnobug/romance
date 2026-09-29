@@ -59,11 +59,11 @@ NUXT_PUBLIC_ADMIN_API_BASE=https://admin.yzre.cn
 | 校验动态码 | POST | `/api/moments/auth/verify` `{ username, code }` |
 | 退出 | POST | `/api/moments/auth/logout` |
 | 当前用户 | GET | `/api/moments/auth/me` |
-| 上传准备 | POST | `/api/moments/posts/prepare` `{ filename, contentType, size, kind? }` |
-| 发帖 | POST | `/api/moments/posts` `{ text, images[], location, video?, videoCover?, videoDuration? }` |
+| 上传准备 | POST | `/api/moments/posts/prepare` `{ filename, contentType, size, kind?: image\|video }` |
+| 发帖 | POST | `/api/moments/posts` `{ text, images[], location, video?: { url, key, cover, duration } }` 或扁平 `videoUrl` / `cover` / `duration` |
 | 删帖 | DELETE | `/api/moments/posts/:id` |
 
-朋友圈短视频限制（前后端对齐）：**最长 60 秒、最大 80MB**，MIME 以 `video/mp4`、`video/quicktime`、`video/webm` 为主。封面优先用上传的 `videoCover`，否则对七牛视频做 `vframe` 抽帧。公开列表需带回 `video` / `videoCover`（字段名差异由前端兼容）。
+朋友圈短视频限制（与 admin #14 对齐）：**最长 60 秒、最大 50MB**，MIME 为 `video/mp4`、`video/quicktime`、`video/webm`。封面优先用上传的 `cover`，否则对七牛视频做 `vframe` 抽帧。公开列表读 `video` / `videoUrl` / `video_url`、`cover` / `video_cover_url`、`mediaType`。
 
 字段名若与后台略有出入，前端会做兼容映射。婚纱照分类与朋友圈无关，也不使用 yunfeng 的 draft/final/base。
 

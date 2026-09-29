@@ -169,15 +169,18 @@ async function publish() {
   try {
     const images: string[] = []
     let video = ''
+    let videoKey = ''
     let videoCover = ''
     if (videoFile.value) {
       progress.value = '正在上传视频…'
-      video = await uploadMomentFile(videoFile.value)
+      const uploaded = await uploadMomentFile(videoFile.value)
+      video = uploaded.url
+      videoKey = uploaded.key
       progress.value = '正在生成封面…'
       const poster = await captureVideoPoster(videoFile.value)
       if (poster) {
         progress.value = '正在上传封面…'
-        videoCover = await uploadMomentFile(poster)
+        videoCover = (await uploadMomentFile(poster)).url
       }
     }
     else {
@@ -192,6 +195,7 @@ async function publish() {
       images,
       location: location.value.trim(),
       video,
+      videoKey,
       videoCover,
       videoDuration: videoDuration.value || undefined,
     })
