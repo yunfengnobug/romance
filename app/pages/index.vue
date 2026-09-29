@@ -1,16 +1,16 @@
 <script setup lang="ts">
 useHead({
-  title: '朝心',
+  title: '云枫',
 })
 </script>
 
 <template>
   <div class="home">
     <section class="home__hero">
-      <p class="home__eyebrow">王俊杰 · 李朝新</p>
-      <h1 class="home__title">朝心</h1>
+      <p class="home__eyebrow">个人站点</p>
+      <h1 class="home__title">云枫</h1>
       <p class="home__lead">
-        这是王俊杰与李朝新的小站。朋友圈记下日常，婚纱照留下并肩的光。
+        风停在云上，日子落在人间。这里没有喧闹，只有几帧生活，和一本还在装订的婚纱相册。
       </p>
     </section>
 
@@ -23,7 +23,7 @@ useHead({
         />
         <div class="home__card-body">
           <h2>朋友圈</h2>
-          <p>日常里的片刻，都记在这里。登录后可以发朋友圈。</p>
+          <p>看看最近的生活切片。登录后可以发朋友圈。</p>
           <span class="home__card-go">进入 →</span>
         </div>
       </NuxtLink>
@@ -36,7 +36,7 @@ useHead({
         />
         <div class="home__card-body">
           <h2>婚纱照</h2>
-          <p>婚礼那天的光，都收在这里。</p>
+          <p>按后台配置的分组翻看婚纱照。</p>
           <span class="home__card-go">进入 →</span>
         </div>
       </NuxtLink>

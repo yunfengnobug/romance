@@ -9,9 +9,9 @@
     </main>
     <footer class="layout__footer">
       <p class="layout__copy">
-        <span>朝心</span>
+        <span>云枫</span>
         <span class="layout__dot">·</span>
-        <span>王俊杰与李朝新</span>
+        <span>仅作展示，图片为占位</span>
       </p>
       <p class="layout__beian">
         <a

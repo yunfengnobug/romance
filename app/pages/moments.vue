@@ -2,7 +2,7 @@
 import { momentsPosts as mockPosts, momentsProfile as mockProfile } from '~~/data/moments'
 
 useHead({
-  title: '朋友圈 · 朝心',
+  title: '朋友圈 · 云枫',
 })
 
 const {

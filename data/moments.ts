@@ -2,8 +2,8 @@
 // 生产朋友圈以 admin 公开接口为准，不要假设字段与婚纱照 draft/final 相同。
 
 export const momentsProfile: any = {
-  nickname: '朝心',
-  signature: '朝新与俊杰',
+  nickname: '云枫',
+  signature: '风过无痕，云停有声',
   avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=240&h=240&q=80',
   cover: 'https://images.unsplash.com/photo-1508193638397-1c4234db14d8?auto=format&fit=crop&w=1400&h=800&q=80',
 }
@@ -11,7 +11,7 @@ export const momentsProfile: any = {
 export const momentsPosts: any[] = [
   {
     id: 'm1',
-    author: '朝心',
+    author: '云枫',
     avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=240&h=240&q=80',
     text: '傍晚路过一棵枫树，叶子红得像被晚霞轻轻染过。拍了几张，风一吹就散了。',
     images: [
@@ -22,12 +22,12 @@ export const momentsPosts: any[] = [
     likes: ['林深', '阿宁', '小满'],
     comments: [
       { user: '林深', text: '这片红真好看。' },
-      { user: '朝心', text: '傍晚的光刚好。' },
+      { user: '云枫', text: '傍晚的光刚好。' },
     ],
   },
   {
     id: 'm2',
-    author: '朝心',
+    author: '云枫',
     avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=240&h=240&q=80',
     text: '下雨天适合坐在窗边发呆。咖啡慢慢凉了，书只翻了两页。',
     images: [
@@ -41,7 +41,7 @@ export const momentsPosts: any[] = [
   },
   {
     id: 'm3',
-    author: '朝心',
+    author: '云枫',
     avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=240&h=240&q=80',
     text: '海边的风把头发吹乱了，也把心事吹淡了一点。',
     images: [
@@ -59,7 +59,7 @@ export const momentsPosts: any[] = [
   },
   {
     id: 'm4',
-    author: '朝心',
+    author: '云枫',
     avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=240&h=240&q=80',
     text: '把旧相机翻出来，胶片还剩几张。先把窗台上的光记下来。',
     images: [
@@ -75,7 +75,7 @@ export const momentsPosts: any[] = [
   },
   {
     id: 'm5',
-    author: '朝心',
+    author: '云枫',
     avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=240&h=240&q=80',
     text: '春天最后一场花，还是决定走去看看。人不多，风很轻。',
     images: [
@@ -96,7 +96,7 @@ export const momentsPosts: any[] = [
   },
   {
     id: 'm6',
-    author: '朝心',
+    author: '云枫',
     avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=240&h=240&q=80',
     text: '今晚没有照片。就把这句话放在这里：日子普通，也很好。',
     images: [],
