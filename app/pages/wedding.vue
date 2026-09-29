@@ -2,7 +2,7 @@
 import { weddingCategories as mockCategories, weddingHero, weddingPhotos as mockPhotos, weddingStory } from '~~/data/wedding'
 
 useHead({
-  title: '婚纱照 · 云枫',
+  title: '婚纱照 · 朝心',
 })
 
 const emptyAlbum = () => ({ cover: '', categories: [], photos: [], waiting: false })
@@ -105,8 +105,7 @@ onMounted(() => {
         正在显示本地示例。线上分类由后台配置，不使用这份 mock 分组名。
       </p>
       <p v-else-if="album.waiting" class="wedding__banner">
-        正在等待 admin 公开接口：<code>/api/public/wedding/categories</code> 与
-        <code>/api/public/wedding/photos</code>。就绪后会出现「全部」和后台配置的分类。
+        相册准备中，敬请期待。
       </p>
       <div v-if="groups.length > 1" class="wedding__tabs" role="tablist">
         <button
@@ -138,7 +137,7 @@ onMounted(() => {
         </button>
       </div>
       <p v-else-if="!album.waiting" class="wedding__empty">
-        {{ activeGroup === 'all' ? '相册还是空的。' : '这一组还没有照片，稍后会补上。' }}
+        {{ activeGroup === 'all' ? '相册准备中，敬请期待。' : '这一组暂无照片，敬请期待。' }}
       </p>
     </section>
 
