@@ -36,7 +36,7 @@ useHead({
         />
         <div class="home__card-body">
           <h2>婚纱照</h2>
-          <p>相册骨架已经搭好。占位图可随时换成你们的照片。</p>
+          <p>按后台配置的分组翻看婚纱照。</p>
           <span class="home__card-go">进入 →</span>
         </div>
       </NuxtLink>

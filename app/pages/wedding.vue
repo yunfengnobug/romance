@@ -1,27 +1,35 @@
 <script setup lang="ts">
-import { weddingHero, weddingPhotos, weddingStory } from '~~/data/wedding'
+import { weddingCategories as mockCategories, weddingHero, weddingPhotos as mockPhotos, weddingStory } from '~~/data/wedding'
 
 useHead({
   title: '婚纱照 · 云枫',
 })
 
-// 相册分组：全部 / 外景 / 室内
-const groups = [
-  { key: 'all', label: '全部' },
-  { key: 'outdoor', label: '外景' },
-  { key: 'indoor', label: '室内' },
-]
+const emptyAlbum = () => ({ cover: '', categories: [], photos: [], waiting: false })
 
-// 当前选中的分组
+const album = ref(emptyAlbum())
+const loading = ref(true)
+const loadError = ref('')
+const usingMock = ref(false)
 const activeGroup = ref('all')
-
-// 灯箱当前图片
 const previewSrc = ref('')
 
-// 按分组过滤照片
+// 封面：接口 cover，否则第一张照片
+const coverSrc = computed(() => pickWeddingCover(album.value))
+
+// Tab = 全部 + 后台分类 label，不在前端写死分组名
+const groups = computed(() => [
+  { key: 'all', label: '全部' },
+  ...album.value.categories.map((item: any) => ({
+    key: item.tabKey || item.id || item.slug,
+    label: item.label,
+  })),
+])
+
+// 按当前分类过滤（对照 category id 或 slug）
 const filteredPhotos = computed(() => {
-  if (activeGroup.value === 'all') return weddingPhotos
-  return weddingPhotos.filter((item: any) => item.group === activeGroup.value)
+  if (activeGroup.value === 'all') return album.value.photos
+  return album.value.photos.filter((item: any) => photoMatchesGroup(item, activeGroup.value))
 })
 
 // 切换相册分组
@@ -38,12 +46,49 @@ function openPreview(src: string) {
 function closePreview() {
   previewSrc.value = ''
 }
+
+// 当前选中的分类如果已被后台删掉，回到全部
+function ensureActiveGroup() {
+  const keys = groups.value.map((item: any) => item.key)
+  if (!keys.includes(activeGroup.value)) activeGroup.value = 'all'
+}
+
+async function loadAlbum() {
+  loading.value = true
+  loadError.value = ''
+  usingMock.value = false
+
+  if (weddingUseMock()) {
+    album.value = albumFromMock(mockCategories, mockPhotos)
+    usingMock.value = true
+    ensureActiveGroup()
+    loading.value = false
+    return
+  }
+
+  try {
+    album.value = await fetchWeddingAlbum()
+    loadError.value = ''
+  }
+  catch (err: any) {
+    album.value = emptyAlbum()
+    loadError.value = readErrorMessage(err)
+  }
+  finally {
+    ensureActiveGroup()
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  loadAlbum()
+})
 </script>
 
 <template>
   <div class="wedding">
     <section class="wedding__hero">
-      <img :src="weddingHero.cover" :alt="weddingHero.title" class="wedding__hero-img" />
+      <img v-if="coverSrc" :src="coverSrc" :alt="weddingHero.title" class="wedding__hero-img" />
       <div class="wedding__hero-mask">
         <h1>{{ weddingHero.title }}</h1>
         <p>{{ weddingHero.subtitle }}</p>
@@ -56,7 +101,14 @@ function closePreview() {
     </section>
 
     <section class="wedding__album">
-      <div class="wedding__tabs" role="tablist">
+      <p v-if="usingMock" class="wedding__banner">
+        正在显示本地示例。线上分类由后台配置，不使用这份 mock 分组名。
+      </p>
+      <p v-else-if="album.waiting" class="wedding__banner">
+        正在等待 admin 公开接口：<code>/api/public/wedding/categories</code> 与
+        <code>/api/public/wedding/photos</code>。就绪后会出现「全部」和后台配置的分类。
+      </p>
+      <div v-if="groups.length > 1" class="wedding__tabs" role="tablist">
         <button
           v-for="group in groups"
           :key="group.key"
@@ -69,7 +121,12 @@ function closePreview() {
         </button>
       </div>
 
-      <div v-if="filteredPhotos.length" class="wedding__grid">
+      <p v-if="loading" class="wedding__empty">正在加载相册…</p>
+      <div v-else-if="loadError" class="wedding__empty">
+        <p>{{ loadError }}</p>
+        <button type="button" class="wedding__retry" @click="loadAlbum">重试</button>
+      </div>
+      <div v-else-if="filteredPhotos.length" class="wedding__grid">
         <button
           v-for="photo in filteredPhotos"
           :key="photo.id"
@@ -77,10 +134,12 @@ function closePreview() {
           class="wedding__cell"
           @click="openPreview(photo.src)"
         >
-          <img :src="photo.src" :alt="photo.alt" />
+          <img :src="photo.src" :alt="photo.alt" loading="lazy" />
         </button>
       </div>
-      <p v-else class="wedding__empty">这一组还没有照片，稍后会补上。</p>
+      <p v-else-if="!album.waiting" class="wedding__empty">
+        {{ activeGroup === 'all' ? '相册还是空的。' : '这一组还没有照片，稍后会补上。' }}
+      </p>
     </section>
 
     <ImageLightbox v-if="previewSrc" :src="previewSrc" @close="closePreview" />
@@ -158,8 +217,24 @@ function closePreview() {
     padding: 20px 16px 0;
   }
 
+  &__banner {
+    margin: 0 0 16px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    background: $color-like-bg;
+    color: $color-muted;
+    font-size: 12px;
+    line-height: 1.5;
+    text-align: center;
+
+    code {
+      font-size: 11px;
+    }
+  }
+
   &__tabs {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     gap: 8px;
     margin-bottom: 20px;
@@ -221,6 +296,16 @@ function closePreview() {
     background: $color-paper;
     border: 1px dashed $color-line;
     border-radius: 12px;
+  }
+
+  &__retry {
+    margin-top: 12px;
+    border: 0;
+    background: $color-maple;
+    color: #fff;
+    border-radius: 8px;
+    padding: 8px 16px;
+    cursor: pointer;
   }
 }
 
