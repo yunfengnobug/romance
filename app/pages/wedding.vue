@@ -13,9 +13,22 @@ const loadError = ref('')
 const usingMock = ref(false)
 const activeGroup = ref('all')
 const previewSrc = ref('')
+const heroRef = ref<HTMLElement | null>(null)
+const gridRef = ref<HTMLElement | null>(null)
+
+// 封面 / 格子请求宽：渲染 CSS 宽 × dpr × 1.2，步进 80，封顶 2200
+const heroWidth = usePhotoDisplayWidth(heroRef, {
+  fallback: QINIU_FALLBACK_HERO,
+  estimate: estimateWeddingHeroCssWidth,
+})
+const thumbWidth = usePhotoDisplayWidth(gridRef, {
+  fallback: QINIU_FALLBACK_THUMB,
+  measure: measureColumnCssWidth,
+  estimate: estimateWeddingColumnCssWidth,
+})
 
 // 封面：接口 cover，否则第一张照片（展示时再套七牛限宽，不改原 URL）
-const coverSrc = computed(() => buildPhotoHeroUrl(pickWeddingCover(album.value)))
+const coverSrc = computed(() => buildPhotoHeroUrl(pickWeddingCover(album.value), heroWidth.value))
 
 // Tab = 全部 + 后台分类 label，不在前端写死分组名
 const groups = computed(() => [
@@ -37,7 +50,7 @@ function selectGroup(key: string) {
   activeGroup.value = key
 }
 
-// 打开图片预览（传原图 URL，灯箱展示时再套 1600w webp）
+// 打开图片预览（传原图 URL，灯箱按视口实测宽出 webp）
 function openPreview(src: string) {
   previewSrc.value = src
 }
@@ -87,7 +100,7 @@ onMounted(() => {
 
 <template>
   <div class="wedding">
-    <section class="wedding__hero">
+    <section ref="heroRef" class="wedding__hero">
       <img v-if="coverSrc" :src="coverSrc" :alt="weddingHero.title" class="wedding__hero-img" />
       <div class="wedding__hero-mask">
         <h1>{{ weddingHero.title }}</h1>
@@ -125,7 +138,7 @@ onMounted(() => {
         <p>{{ loadError }}</p>
         <button type="button" class="wedding__retry" @click="loadAlbum">重试</button>
       </div>
-      <div v-else-if="filteredPhotos.length" class="wedding__grid">
+      <div v-else-if="filteredPhotos.length" ref="gridRef" class="wedding__grid">
         <button
           v-for="photo in filteredPhotos"
           :key="photo.id"
@@ -133,7 +146,7 @@ onMounted(() => {
           class="wedding__cell"
           @click="openPreview(photo.src)"
         >
-          <img :src="buildPhotoThumbUrl(photo.src)" :alt="photo.alt" loading="lazy" />
+          <img :src="buildPhotoThumbUrl(photo.src, thumbWidth)" :alt="photo.alt" loading="lazy" />
         </button>
       </div>
       <p v-else-if="!album.waiting" class="wedding__empty">
