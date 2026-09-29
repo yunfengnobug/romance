@@ -105,4 +105,17 @@ export const momentsPosts: any[] = [
     likes: ['林深', '阿宁'],
     comments: [{ user: '林深', text: '普通的日子最珍贵。' }],
   },
+  {
+    id: 'm7',
+    author: '我们的故事',
+    avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=240&h=240&q=80',
+    text: '风把头发吹起来的那一秒。',
+    images: [],
+    video: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
+    videoCover: 'https://images.unsplash.com/photo-1462275646964-a0e3386b89fa?auto=format&fit=crop&w=700&q=80',
+    time: '刚刚',
+    location: '',
+    likes: ['小满'],
+    comments: [{ user: '小满', text: '像电影。' }],
+  },
 ]

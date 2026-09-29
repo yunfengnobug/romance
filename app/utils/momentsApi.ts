@@ -97,7 +97,8 @@ export function mapMomentPost(raw: any, fallbackAvatar = '') {
   const post = raw && typeof raw === 'object' ? raw : {}
   const author = post.author && typeof post.author === 'object' ? post.author : null
   const user = post.user && typeof post.user === 'object' ? post.user : null
-  const images = pickImages(post)
+  const video = pickVideo(post)
+  const images = video.url ? [] : pickImages(post)
   return {
     id: String(post.id ?? post._id ?? post.postId ?? ''),
     author:
@@ -118,6 +119,9 @@ export function mapMomentPost(raw: any, fallbackAvatar = '') {
       || fallbackAvatar,
     text: post.text || post.content || post.body || '',
     images,
+    video: video.url,
+    videoCover: video.cover,
+    videoDuration: video.duration,
     time: formatMomentTime(post.time || post.createdAt || post.created_at || post.publishedAt || post.date),
     location: pickLocation(post.location || post.place),
     likes: pickLikes(post.likes || post.likeUsers),
@@ -204,14 +208,32 @@ export async function fetchMomentsMe() {
   }
 }
 
+/** 朋友圈短视频上限：60 秒、80MB（与后台 prepare 对齐） */
+export const MOMENT_MAX_IMAGES = 9
+export const MOMENT_VIDEO_MAX_BYTES = 80 * 1024 * 1024
+export const MOMENT_VIDEO_MAX_SECONDS = 60
+export const MOMENT_VIDEO_MIMES = [
+  'video/mp4',
+  'video/quicktime',
+  'video/webm',
+  'video/x-m4v',
+  'video/3gpp',
+]
+
 /** 申请一张图的七牛上传凭证，再直传 */
 export async function uploadMomentImage(file: File): Promise<string> {
+  return uploadMomentFile(file)
+}
+
+/** 申请媒体（图/视频）七牛上传凭证，再直传，返回 CDN 原地址 */
+export async function uploadMomentFile(file: File): Promise<string> {
   const prep = unwrapPayload(await adminFetch('/api/moments/posts/prepare', {
     method: 'POST',
     body: {
       filename: file.name,
-      contentType: file.type || 'image/jpeg',
+      contentType: file.type || guessContentType(file),
       size: file.size,
+      kind: file.type.startsWith('video/') ? 'video' : 'image',
     },
     auth: true,
   })) || {}
@@ -232,19 +254,38 @@ export async function uploadMomentImage(file: File): Promise<string> {
   })
 
   const url = pickUrl(prep) || joinUrl(prep.domain || prep.cdnDomain || prep.baseUrl, uploaded?.key || key)
-  if (!url) throw new Error('上传成功但未得到图片地址')
+  if (!url) throw new Error('上传成功但未得到文件地址')
   return url
 }
 
 /** 发布一条朋友圈，未登录不要调用 */
-export async function createMomentPost(payload: { text: string, images: string[], location: string }) {
+export async function createMomentPost(payload: {
+  text: string
+  images: string[]
+  location: string
+  video?: string
+  videoCover?: string
+  videoDuration?: number
+}) {
+  const body: any = {
+    text: payload.text,
+    images: payload.video ? [] : payload.images,
+    location: payload.location || '',
+  }
+  if (payload.video) {
+    body.video = payload.video
+    body.videoUrl = payload.video
+    body.videoCover = payload.videoCover || ''
+    body.cover = payload.videoCover || ''
+    body.poster = payload.videoCover || ''
+    if (payload.videoDuration && payload.videoDuration > 0) {
+      body.videoDuration = payload.videoDuration
+      body.duration = payload.videoDuration
+    }
+  }
   const raw = await adminFetch('/api/moments/posts', {
     method: 'POST',
-    body: {
-      text: payload.text,
-      images: payload.images,
-      location: payload.location || '',
-    },
+    body,
     auth: true,
   })
   const data = unwrapPayload(raw)
@@ -329,8 +370,56 @@ function readMessage(raw: any): string {
 
 function pickImages(post: any): string[] {
   const raw = post.images || post.photos || post.pics || post.media || []
-  if (!Array.isArray(raw)) return []
-  return raw.map(pickUrl).filter(Boolean)
+  const list = Array.isArray(raw) ? raw : []
+  return list.map(pickUrl).filter((url: string) => url && !isLikelyVideoUrl(url))
+}
+
+function pickVideo(post: any): { url: string, cover: string, duration: number } {
+  const fromObject = (item: any) => {
+    if (!item) return { url: '', cover: '', duration: 0 }
+    if (typeof item === 'string') {
+      return { url: item, cover: '', duration: 0 }
+    }
+    const url = pickUrl(item) || item.videoUrl || item.video_url || item.key || ''
+    const cover = pickUrl(item.cover) || pickUrl(item.poster) || pickUrl(item.videoCover) || pickUrl(item.thumb) || ''
+    const duration = Number(item.duration || item.videoDuration || item.length || 0) || 0
+    return { url, cover, duration }
+  }
+
+  const direct = fromObject(post.video || post.videoUrl || post.video_url)
+  if (direct.url) {
+    const cover = direct.cover
+      || pickUrl(post.videoCover)
+      || pickUrl(post.cover)
+      || pickUrl(post.poster)
+      || pickUrl(post.videoPoster)
+    const duration = direct.duration || Number(post.videoDuration || post.duration || 0) || 0
+    return { url: direct.url, cover, duration }
+  }
+
+  const media = post.media
+  if (Array.isArray(media)) {
+    const hit = media.find((item: any) => {
+      const type = String(item?.type || item?.kind || item?.mime || '').toLowerCase()
+      return type.includes('video') || isLikelyVideoUrl(pickUrl(item))
+    })
+    if (hit) return fromObject(hit)
+  }
+
+  return { url: '', cover: '', duration: 0 }
+}
+
+function guessContentType(file: File): string {
+  const name = String(file.name || '').toLowerCase()
+  if (/\.(mp4|m4v)$/.test(name)) return 'video/mp4'
+  if (/\.mov$/.test(name)) return 'video/quicktime'
+  if (/\.webm$/.test(name)) return 'video/webm'
+  if (/\.(jpe?g)$/.test(name)) return 'image/jpeg'
+  if (/\.png$/.test(name)) return 'image/png'
+  if (/\.webp$/.test(name)) return 'image/webp'
+  if (/\.gif$/.test(name)) return 'image/gif'
+  if (/\.heic$/.test(name)) return 'image/heic'
+  return file.type || 'application/octet-stream'
 }
 
 function pickLocation(value: any): string {

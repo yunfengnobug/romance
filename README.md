@@ -37,8 +37,8 @@ NUXT_PUBLIC_ADMIN_API_BASE=https://admin.yzre.cn
 ## 功能
 
 - 首页：我们的故事简介，进入「朋友圈」与「婚纱照」
-- 朋友圈：封面与动态流来自 admin 公开接口；1/2/3/4/9 图宫格、点赞与评论展示、点击图片全屏预览
-- 发朋友圈：未登录点「发朋友圈」走账号 + 6 位 TOTP / 备用码（无密码）；登录后仿微信发表（文本、多图、可选位置），图片先 `prepare` 再直传七牛
+- 朋友圈：封面与动态流来自 admin 公开接口；1/2/3/4/9 图宫格、点赞与评论展示、点击图片全屏预览。`img.yzre.cn` / 七牛图在宫格、灯箱、封面、头像展示时追加 `imageView2`（webp），公式与婚纱照相同（CSS 宽 × dpr × 1.2，步进 80，最大 2200），不改接口原 URL。
+- 发朋友圈：未登录点「发朋友圈」走账号 + 6 位 TOTP / 备用码（无密码）；登录后仿微信发表（文本、最多 9 图或 **1 条短视频**、可选位置）。图片/视频先 `prepare` 再直传七牛；视频与图片不能同时发。
 - 自己的动态可删除（后台允许时）
 - 婚纱照：主视觉、我们的故事、全部 + 后台动态分类、多列瀑布流、加载 / 空 / 错误状态、图片预览。分类名不在前端写死。`img.yzre.cn` / 七牛图在列表、灯箱、封面展示时追加 `imageView2`（webp）。请求宽 = `ceil(渲染CSS宽 × dpr × 1.2 / 80) × 80`，封顶 2200，不改接口原 URL。
 - 顶部导航：首页 / 朋友圈 / 婚纱照
@@ -59,9 +59,11 @@ NUXT_PUBLIC_ADMIN_API_BASE=https://admin.yzre.cn
 | 校验动态码 | POST | `/api/moments/auth/verify` `{ username, code }` |
 | 退出 | POST | `/api/moments/auth/logout` |
 | 当前用户 | GET | `/api/moments/auth/me` |
-| 上传准备 | POST | `/api/moments/posts/prepare` |
-| 发帖 | POST | `/api/moments/posts` `{ text, images[], location }` |
+| 上传准备 | POST | `/api/moments/posts/prepare` `{ filename, contentType, size, kind? }` |
+| 发帖 | POST | `/api/moments/posts` `{ text, images[], location, video?, videoCover?, videoDuration? }` |
 | 删帖 | DELETE | `/api/moments/posts/:id` |
+
+朋友圈短视频限制（前后端对齐）：**最长 60 秒、最大 80MB**，MIME 以 `video/mp4`、`video/quicktime`、`video/webm` 为主。封面优先用上传的 `videoCover`，否则对七牛视频做 `vframe` 抽帧。公开列表需带回 `video` / `videoCover`（字段名差异由前端兼容）。
 
 字段名若与后台略有出入，前端会做兼容映射。婚纱照分类与朋友圈无关，也不使用 yunfeng 的 draft/final/base。
 
@@ -111,7 +113,7 @@ NUXT_PUBLIC_ADMIN_API_BASE=https://admin.yzre.cn
 - **@nuxt/content**（没有叫 Content 7 的官方包；当前是 Content v3）：适合 markdown 文档/博客
 - 支付相关模块
 
-婚纱照七牛图在展示层用 `imageView2` 出 webp，宽度跟屏幕上的盒子走（× dpr × 1.2，步进 80，最大 2200）；其它远程图仍用普通 `<img>`。
+婚纱照与朋友圈的七牛图在展示层用 `imageView2` 出 webp，宽度跟屏幕上的盒子走（× dpr × 1.2，步进 80，最大 2200）；其它远程图仍用普通 `<img>`。朋友圈视频走原文件播放，封面可用上传图或七牛 `vframe`。
 
 ## 目录
 

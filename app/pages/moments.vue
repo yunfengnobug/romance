@@ -28,9 +28,24 @@ const usingMock = ref(false)
 const previewSrc = ref('')
 const composerOpen = ref(false)
 const sessionError = ref('')
+const coverRef = ref<HTMLElement | null>(null)
+const avatarRef = ref<HTMLElement | null>(null)
 
-// 打开图片预览
+const coverWidth = usePhotoDisplayWidth(coverRef, {
+  fallback: QINIU_FALLBACK_MOMENT_COVER,
+  estimate: estimateMomentsCoverCssWidth,
+})
+const avatarWidth = usePhotoDisplayWidth(avatarRef, {
+  fallback: QINIU_FALLBACK_AVATAR,
+  estimate: estimateMomentsCoverAvatarCssWidth,
+})
+
+const coverDisplay = computed(() => buildPhotoHeroUrl(profile.value.cover, coverWidth.value))
+const avatarDisplay = computed(() => buildPhotoAvatarUrl(profile.value.avatar, avatarWidth.value))
+
+// 打开图片预览（传原图 URL；视频不进灯箱）
 function openPreview(src: string) {
+  if (!src || isLikelyVideoUrl(src)) return
   previewSrc.value = src
 }
 
@@ -42,7 +57,7 @@ function closePreview() {
 // 开发回退：用仓库里的示例数据
 function applyMock() {
   profile.value = { ...mockProfile }
-  posts.value = mockPosts.map((item: any) => ({ ...item }))
+  posts.value = mockPosts.map((item: any) => mapMomentPost(item, mockProfile.avatar))
   usingMock.value = true
 }
 
@@ -113,7 +128,7 @@ async function onLogout() {
 // 发表成功后插到最前；没有回传正文就重拉列表
 function onPublished(created: any) {
   composerOpen.value = false
-  if (created && (created.id || created.text || created.images)) {
+  if (created && (created.id || created.text || created.images || created.video || created.videoUrl)) {
     const mapped = mapMomentPost(created, me.value?.avatar || profile.value.avatar)
     if (!mapped.author) mapped.author = me.value?.nickname || profile.value.nickname
     if (!mapped.avatar) mapped.avatar = me.value?.avatar || profile.value.avatar
@@ -142,8 +157,8 @@ onMounted(async () => {
 <template>
   <div class="moments">
     <div class="moments__phone">
-      <section class="moments__cover">
-        <img v-if="profile.cover" :src="profile.cover" alt="朋友圈封面" class="moments__cover-img" />
+      <section ref="coverRef" class="moments__cover">
+        <img v-if="coverDisplay" :src="coverDisplay" alt="朋友圈封面" class="moments__cover-img" />
         <button
           type="button"
           class="moments__camera"
@@ -165,7 +180,13 @@ onMounted(async () => {
             <p class="moments__nickname">{{ profile.nickname }}</p>
             <p class="moments__sign">{{ profile.signature }}</p>
           </div>
-          <img v-if="profile.avatar" :src="profile.avatar" :alt="profile.nickname" class="moments__avatar" />
+          <img
+            v-if="avatarDisplay"
+            ref="avatarRef"
+            :src="avatarDisplay"
+            :alt="profile.nickname"
+            class="moments__avatar"
+          />
           <div v-else class="moments__avatar" aria-hidden="true" />
         </div>
       </section>
