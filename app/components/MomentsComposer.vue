@@ -1,5 +1,15 @@
 <script setup lang="ts">
-const emit = defineEmits(['close', 'published'])
+const emit = defineEmits(['close', 'published', 'unauthenticated'])
+
+const { loggedIn, refreshMe } = useMomentsAuth()
+
+// 打开或发表前再问一次 /me，避免半登录停在红字错误上
+async function ensureSession() {
+  await refreshMe()
+  if (loggedIn.value) return true
+  emit('unauthenticated')
+  return false
+}
 
 const text = ref('')
 const location = ref('')
@@ -164,6 +174,7 @@ function openVideoPicker() {
 
 async function publish() {
   if (!canPublish.value || pending.value) return
+  if (!(await ensureSession())) return
   error.value = ''
   pending.value = true
   try {
@@ -202,11 +213,19 @@ async function publish() {
     emit('published', created)
   }
   catch (err: any) {
-    error.value = readErrorMessage(err)
     pending.value = false
     progress.value = ''
+    if (isAuthSessionError(err)) {
+      emit('unauthenticated')
+      return
+    }
+    error.value = readErrorMessage(err)
   }
 }
+
+onMounted(() => {
+  ensureSession()
+})
 
 onUnmounted(() => {
   previews.value.forEach(revoke)

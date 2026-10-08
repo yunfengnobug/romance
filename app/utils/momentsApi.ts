@@ -318,15 +318,32 @@ export function isUnreachableError(err: any): boolean {
   return status >= 500
 }
 
+/** 后台未登录 / 会话失效（含 admin 原文「未登录或会话已失效」） */
+export function isAuthSessionError(err: any): boolean {
+  const status = err?.statusCode || err?.status
+  if (status === 401) return true
+  const text = [
+    readMessage(err?.data),
+    readMessage(err?.response?._data),
+    err?.message,
+    err?.statusMessage,
+  ].filter(Boolean).join(' ')
+  return /未登录|会话已失效|登录已失效/.test(text)
+}
+
 /** 抽出人类可读的错误文案 */
 export function readErrorMessage(err: any): string {
   const fromBody = readMessage(err?.data) || readMessage(err?.response?._data)
-  if (fromBody) return fromBody
+  if (fromBody) {
+    if (/未登录|会话已失效/.test(fromBody)) return '登录已失效，请重新登录'
+    return fromBody
+  }
   if (err?.statusMessage && err.statusMessage !== 'Fetch Error') return err.statusMessage
   const raw = String(err?.message || err?.cause?.message || '')
   if (/Failed to fetch|NetworkError|CORS|ERR_FAILED|no response/i.test(raw)) {
     return '无法连接后台，请检查地址或跨域设置'
   }
+  if (/未登录|会话已失效/.test(raw)) return '登录已失效，请重新登录'
   if (raw && !raw.startsWith('[GET]') && !raw.startsWith('[POST]') && !raw.startsWith('[DELETE]')) {
     return raw
   }
