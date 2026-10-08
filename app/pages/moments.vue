@@ -110,11 +110,11 @@ async function onTapPublish() {
 }
 
 async function onLoggedIn(user: any) {
-  if (user) me.value = user
+  // loginMoments 已用 /me 确认过；这里再拉一次，不以 verify 正文当会话
+  me.value = user || null
   closeLogin()
   await refreshMe()
   await loadPublic(true)
-  // verify 回了用户对象 ≠ cookie 已写入；只信 /me
   if (loggedIn.value) {
     sessionError.value = ''
     composerOpen.value = true

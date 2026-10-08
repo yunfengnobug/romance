@@ -170,7 +170,7 @@ export async function fetchMomentsProfile() {
   return await adminFetch('/api/public/moments/profile')
 }
 
-/** 发起登录挑战（不需要密码） */
+/** 发起登录挑战。本站发表登录不再调用，以免验码前写入半会话。 */
 export async function requestAuthChallenge(username: string) {
   return unwrapPayload(await adminFetch('/api/moments/auth/challenge', {
     method: 'POST',
@@ -208,6 +208,23 @@ export async function fetchMomentsMe() {
     if (status === 401 || status === 403) return null
     throw err
   }
+}
+
+/**
+ * 一步登录：账号 + 动态码一次打 verify。
+ * 必须能读到 /me 才算成功；否则清掉可能残留的 cookie，当作失败。
+ */
+export async function loginMoments(username: string, code: string) {
+  await verifyAuthCode(username, code)
+  const me = await fetchMomentsMe()
+  if (me) return me
+  try {
+    await logoutMoments()
+  }
+  catch {
+    // 清会话失败也视为未登录
+  }
+  throw new Error('登录未生效，请重新登录')
 }
 
 /** 朋友圈短视频上限：与已合入的 admin #14 对齐（fsizeLimit 80MB，时长 60 秒） */
