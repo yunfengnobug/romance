@@ -170,7 +170,7 @@ export async function fetchMomentsProfile() {
   return await adminFetch('/api/public/moments/profile')
 }
 
-/** 发起登录挑战（不需要密码） */
+/** 发起登录挑战。本站发表登录不再调用，以免验码前写入半会话。 */
 export async function requestAuthChallenge(username: string) {
   return unwrapPayload(await adminFetch('/api/moments/auth/challenge', {
     method: 'POST',
@@ -208,6 +208,23 @@ export async function fetchMomentsMe() {
     if (status === 401 || status === 403) return null
     throw err
   }
+}
+
+/**
+ * 一步登录：账号 + 动态码一次打 verify。
+ * 必须能读到 /me 才算成功；否则清掉可能残留的 cookie，当作失败。
+ */
+export async function loginMoments(username: string, code: string) {
+  await verifyAuthCode(username, code)
+  const me = await fetchMomentsMe()
+  if (me) return me
+  try {
+    await logoutMoments()
+  }
+  catch {
+    // 清会话失败也视为未登录
+  }
+  throw new Error('登录未生效，请重新登录')
 }
 
 /** 朋友圈短视频上限：与已合入的 admin #14 对齐（fsizeLimit 80MB，时长 60 秒） */
@@ -318,15 +335,32 @@ export function isUnreachableError(err: any): boolean {
   return status >= 500
 }
 
+/** 后台未登录 / 会话失效（含 admin 原文「未登录或会话已失效」） */
+export function isAuthSessionError(err: any): boolean {
+  const status = err?.statusCode || err?.status
+  if (status === 401) return true
+  const text = [
+    readMessage(err?.data),
+    readMessage(err?.response?._data),
+    err?.message,
+    err?.statusMessage,
+  ].filter(Boolean).join(' ')
+  return /未登录|会话已失效|登录已失效/.test(text)
+}
+
 /** 抽出人类可读的错误文案 */
 export function readErrorMessage(err: any): string {
   const fromBody = readMessage(err?.data) || readMessage(err?.response?._data)
-  if (fromBody) return fromBody
+  if (fromBody) {
+    if (/未登录|会话已失效/.test(fromBody)) return '登录已失效，请重新登录'
+    return fromBody
+  }
   if (err?.statusMessage && err.statusMessage !== 'Fetch Error') return err.statusMessage
   const raw = String(err?.message || err?.cause?.message || '')
   if (/Failed to fetch|NetworkError|CORS|ERR_FAILED|no response/i.test(raw)) {
     return '无法连接后台，请检查地址或跨域设置'
   }
+  if (/未登录|会话已失效/.test(raw)) return '登录已失效，请重新登录'
   if (raw && !raw.startsWith('[GET]') && !raw.startsWith('[POST]') && !raw.startsWith('[DELETE]')) {
     return raw
   }

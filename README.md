@@ -38,7 +38,7 @@ NUXT_PUBLIC_ADMIN_API_BASE=https://admin.yzre.cn
 
 - 首页：我们的故事简介，进入「朋友圈」与「婚纱照」
 - 朋友圈：封面与动态流来自 admin 公开接口；1/2/3/4/9 图宫格、点赞与评论展示、点击图片全屏预览。`img.yzre.cn` / 七牛图在宫格、灯箱、封面、头像展示时追加 `imageView2`（webp），公式与婚纱照相同（CSS 宽 × dpr × 1.2，步进 80，最大 2200），不改接口原 URL。
-- 发朋友圈：未登录点「发朋友圈」走账号 + 6 位 TOTP / 备用码（无密码）；登录后仿微信发表（文本、最多 9 图或 **1 条短视频**、可选位置）。图片/视频先 `prepare` 再直传七牛；视频与图片不能同时发。
+- 发朋友圈：未登录点相机，同一弹窗一次提交账号 + 6 位 TOTP / 备用码（无密码）。必须 `GET /me` 确认会话后才打开发表页，不允许半登录编辑。登录后仿微信发表（文本、最多 9 图或 **1 条短视频**、可选位置）。图片/视频先 `prepare` 再直传七牛；视频与图片不能同时发。
 - 自己的动态可删除（后台允许时）
 - 婚纱照：主视觉、我们的故事、全部 + 后台动态分类、多列瀑布流、加载 / 空 / 错误状态、图片预览。分类名不在前端写死。`img.yzre.cn` / 七牛图在列表、灯箱、封面展示时追加 `imageView2`（webp）。请求宽 = `ceil(渲染CSS宽 × dpr × 1.2 / 80) × 80`，封顶 2200，不改接口原 URL。
 - 顶部导航：首页 / 朋友圈 / 婚纱照
@@ -55,17 +55,16 @@ NUXT_PUBLIC_ADMIN_API_BASE=https://admin.yzre.cn
 | --- | --- | --- |
 | 公开动态 | GET | `/api/public/moments/feed` |
 | 公开资料 | GET | `/api/public/moments/profile` |
-| 登录挑战 | POST | `/api/moments/auth/challenge` `{ username }` |
-| 校验动态码 | POST | `/api/moments/auth/verify` `{ username, code }` |
+| 一步登录 | POST | `/api/moments/auth/verify` `{ username, code }`（本站不再先调 challenge） |
 | 退出 | POST | `/api/moments/auth/logout` |
-| 当前用户 | GET | `/api/moments/auth/me` |
+| 当前用户 | GET | `/api/moments/auth/me`（登录成功的唯一依据） |
 | 上传准备 | POST | `/api/moments/posts/prepare` `{ filename, contentType, size, kind?: image\|video }` |
 | 发帖 | POST | `/api/moments/posts` `{ text, images[], location, video?, videoCover?, videoUrl?, cover?, duration? }` |
 | 删帖 | DELETE | `/api/moments/posts/:id` |
 
 朋友圈短视频限制（与已合入的 admin #14 对齐）：**最长 60 秒、最大 80MB**，MIME 为 `video/mp4`、`video/quicktime`、`video/webm`、`video/3gpp`。`video` 为 CDN URL 字符串；封面用 `videoCover` / `cover` / `poster`。公开列表另可读 `video_url` / `video_key` / `video_cover_url` / `mediaType`。
 
-字段名若与后台略有出入，前端会做兼容映射。婚纱照分类与朋友圈无关，也不使用 yunfeng 的 draft/final/base。
+本站登录只打 `verify` + `me`。若 admin 仍要求先 `POST /api/moments/auth/challenge`，或在验码前写入 cookie，需要后台改成：**一次请求同时收账号和动态码；验码成功前不要发会话**。字段名若与后台略有出入，前端会做兼容映射。婚纱照分类与朋友圈无关，也不使用 yunfeng 的 draft/final/base。
 
 ## 婚纱照接口
 

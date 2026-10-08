@@ -98,8 +98,10 @@ async function loadPublic(silent = false) {
   }
 }
 
-// 未登录先打开登录，登录后再进发表页
-function onTapPublish() {
+// 先向 admin 确认 cookie 会话，过期或半登录不要进发表页
+async function onTapPublish() {
+  sessionError.value = ''
+  await refreshMe()
   if (loggedIn.value) {
     composerOpen.value = true
     return
@@ -108,11 +110,25 @@ function onTapPublish() {
 }
 
 async function onLoggedIn(user: any) {
-  if (user) me.value = user
+  // loginMoments 已用 /me 确认过；这里再拉一次，不以 verify 正文当会话
+  me.value = user || null
   closeLogin()
   await refreshMe()
   await loadPublic(true)
-  if (loggedIn.value || user) composerOpen.value = true
+  if (loggedIn.value) {
+    sessionError.value = ''
+    composerOpen.value = true
+    return
+  }
+  me.value = null
+  sessionError.value = '登录未生效，请重新登录'
+}
+
+function onComposerUnauthenticated() {
+  composerOpen.value = false
+  me.value = null
+  sessionError.value = '登录已失效，请重新登录'
+  openLogin()
 }
 
 async function onLogout() {
@@ -218,7 +234,12 @@ onMounted(async () => {
 
     <ImageLightbox v-if="previewSrc" :src="previewSrc" @close="closePreview" />
     <MomentsLogin v-if="loginOpen" @close="closeLogin" @success="onLoggedIn" />
-    <MomentsComposer v-if="composerOpen" @close="composerOpen = false" @published="onPublished" />
+    <MomentsComposer
+      v-if="composerOpen"
+      @close="composerOpen = false"
+      @published="onPublished"
+      @unauthenticated="onComposerUnauthenticated"
+    />
   </div>
 </template>
 

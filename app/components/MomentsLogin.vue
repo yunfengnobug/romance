@@ -3,46 +3,22 @@ const emit = defineEmits(['success', 'close'])
 
 const username = ref('')
 const code = ref('')
-const step = ref<'account' | 'code'>('account')
-const hint = ref('')
 const error = ref('')
 const pending = ref(false)
 const accountInput = ref<HTMLInputElement | null>(null)
-const codeInput = ref<HTMLInputElement | null>(null)
 
-// 打开时聚焦当前步骤
 onMounted(() => {
   nextTick(() => accountInput.value?.focus())
 })
 
-// 第一步：只提交账号，后台再要动态码
-async function submitAccount() {
+// 账号 + 动态码一次提交；/me 确认前不发出 success，避免半登录
+async function submit() {
   const name = username.value.trim()
+  const value = code.value.trim()
   if (!name) {
     error.value = '请输入账号'
     return
   }
-  error.value = ''
-  pending.value = true
-  try {
-    const result = await requestAuthChallenge(name)
-    hint.value = result?.hint || result?.message || '请输入验证器中的 6 位动态码，或备用码'
-    step.value = 'code'
-    await nextTick()
-    codeInput.value?.focus()
-  }
-  catch (err: any) {
-    error.value = readErrorMessage(err)
-  }
-  finally {
-    pending.value = false
-  }
-}
-
-// 第二步：TOTP 或备用码，没有密码
-async function submitCode() {
-  const name = username.value.trim()
-  const value = code.value.trim()
   if (!value) {
     error.value = '请输入动态码或备用码'
     return
@@ -50,7 +26,7 @@ async function submitCode() {
   error.value = ''
   pending.value = true
   try {
-    const user = await verifyAuthCode(name, value)
+    const user = await loginMoments(name, value)
     emit('success', user)
   }
   catch (err: any) {
@@ -59,13 +35,6 @@ async function submitCode() {
   finally {
     pending.value = false
   }
-}
-
-function backToAccount() {
-  step.value = 'account'
-  code.value = ''
-  error.value = ''
-  nextTick(() => accountInput.value?.focus())
 }
 
 function close() {
@@ -82,9 +51,9 @@ function close() {
           <h2 id="moments-login-title">登录发朋友圈</h2>
           <button type="button" class="moments-login__x" aria-label="关闭" @click="close">×</button>
         </header>
-        <p class="moments-login__lead">账号由后台发放，无需密码。用动态码或备用码登录。</p>
+        <p class="moments-login__lead">账号由后台发放，无需密码。账号和动态码一次提交。</p>
 
-        <form v-if="step === 'account'" class="moments-login__form" @submit.prevent="submitAccount">
+        <form class="moments-login__form" @submit.prevent="submit">
           <label class="moments-login__label" for="moments-username">账号</label>
           <input
             id="moments-username"
@@ -97,18 +66,9 @@ function close() {
             placeholder="请输入账号"
             :disabled="pending"
           />
-          <p v-if="error" class="moments-login__error">{{ error }}</p>
-          <button type="submit" class="moments-login__btn" :disabled="pending">
-            {{ pending ? '正在验证…' : '下一步' }}
-          </button>
-        </form>
-
-        <form v-else class="moments-login__form" @submit.prevent="submitCode">
-          <p class="moments-login__hint">{{ hint }}</p>
           <label class="moments-login__label" for="moments-code">动态码 / 备用码</label>
           <input
             id="moments-code"
-            ref="codeInput"
             v-model="code"
             class="moments-login__input moments-login__input--code"
             type="text"
@@ -122,9 +82,6 @@ function close() {
           <button type="submit" class="moments-login__btn" :disabled="pending">
             {{ pending ? '正在登录…' : '登录' }}
           </button>
-          <button type="button" class="moments-login__back" :disabled="pending" @click="backToAccount">
-            返回修改账号
-          </button>
         </form>
       </div>
     </div>
@@ -135,7 +92,7 @@ function close() {
 .moments-login {
   position: fixed;
   inset: 0;
-  z-index: 90;
+  z-index: 94;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -183,8 +140,7 @@ function close() {
     padding: 0 2px;
   }
 
-  &__lead,
-  &__hint {
+  &__lead {
     margin: 10px 0 0;
     font-size: 13px;
     line-height: 1.6;
@@ -229,16 +185,12 @@ function close() {
     color: $color-maple-deep;
   }
 
-  &__btn,
-  &__back {
+  &__btn {
     height: 40px;
+    border: 0;
     border-radius: 8px;
     font-size: 15px;
     cursor: pointer;
-  }
-
-  &__btn {
-    border: 0;
     background: $color-maple;
     color: #fff;
 
@@ -246,12 +198,6 @@ function close() {
       opacity: 0.65;
       cursor: wait;
     }
-  }
-
-  &__back {
-    border: 0;
-    background: transparent;
-    color: $color-wechat;
   }
 }
 </style>
