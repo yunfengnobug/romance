@@ -50,9 +50,10 @@ function isActive(path: string) {
   right: 0;
   z-index: 40;
   height: $header-height;
-  background: rgba($color-paper, 0.92);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid $color-line;
+  background: rgba($color-paper, 0.94);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba($color-maple, 0.12);
+  box-shadow: 0 8px 24px rgba(196, 90, 66, 0.05);
 
   &__inner {
     max-width: 960px;
@@ -98,11 +99,12 @@ function isActive(path: string) {
 
     &:hover {
       color: $color-ink;
+      background: rgba($color-maple, 0.06);
     }
 
     &.is-active {
       color: $color-maple-deep;
-      background: rgba($color-maple, 0.1);
+      background: rgba($color-maple, 0.12);
       font-weight: 600;
     }
   }

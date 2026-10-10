@@ -140,8 +140,8 @@ function onDelete() {
 
   &__panel {
     margin-top: 8px;
-    background: $color-like-bg;
-    border-radius: 3px;
+    background: rgba($color-maple, 0.07);
+    border-radius: 6px;
     overflow: hidden;
   }
 

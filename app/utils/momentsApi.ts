@@ -159,9 +159,14 @@ export function mapMe(raw: any) {
   }
 }
 
+/** 公开读 admin（自动重试 5xx），给朋友圈 / 婚纱照共用 */
+export async function adminPublicGet(path: string) {
+  return adminFetch(path)
+}
+
 /** 公开动态流（只读，不带登录 cookie，避免公开接口 CORS 不放行凭证） */
 export async function fetchMomentsFeed() {
-  const raw = await adminFetch('/api/public/moments/feed')
+  const raw = await adminPublicGet('/api/public/moments/feed')
   return pickList(raw)
 }
 
@@ -353,15 +358,19 @@ export function readErrorMessage(err: any): string {
   const fromBody = readMessage(err?.data) || readMessage(err?.response?._data)
   if (fromBody) {
     if (/未登录|会话已失效/.test(fromBody)) return '登录已失效，请重新登录'
-    return fromBody
+    // Nitro 默认 500 正文是 Server Error，不要原样展示给访客
+    if (!isGenericServerError(fromBody)) return fromBody
   }
-  if (err?.statusMessage && err.statusMessage !== 'Fetch Error') return err.statusMessage
+  const statusMessage = String(err?.statusMessage || '')
+  if (statusMessage && statusMessage !== 'Fetch Error' && !isGenericServerError(statusMessage)) {
+    return statusMessage
+  }
   const raw = String(err?.message || err?.cause?.message || '')
   if (/Failed to fetch|NetworkError|CORS|ERR_FAILED|no response/i.test(raw)) {
     return '无法连接后台，请检查地址或跨域设置'
   }
   if (/未登录|会话已失效/.test(raw)) return '登录已失效，请重新登录'
-  if (raw && !raw.startsWith('[GET]') && !raw.startsWith('[POST]') && !raw.startsWith('[DELETE]')) {
+  if (raw && !isGenericServerError(raw) && !raw.startsWith('[GET]') && !raw.startsWith('[POST]') && !raw.startsWith('[DELETE]')) {
     return raw
   }
   const status = err?.statusCode || err?.status
@@ -376,24 +385,51 @@ export function readErrorMessage(err: any): string {
 async function adminFetch(path: string, options: any = {}) {
   const url = `${adminApiBase()}${path}`
   const auth = Boolean(options.auth)
-  try {
-    return await $fetch(url, {
-      method: options.method || 'GET',
-      body: options.body,
-      credentials: auth ? 'include' : 'omit',
-      headers: {
-        Accept: 'application/json',
-        ...(options.headers || {}),
-      },
-    })
+  const method = options.method || 'GET'
+  // 公开读接口遇到 admin 连库超时（约 4s 的 500）时再试几次
+  const retries = Number.isInteger(options.retries)
+    ? options.retries
+    : (method === 'GET' && !auth ? 3 : 0)
+
+  let lastErr: any
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await $fetch(url, {
+        method,
+        body: options.body,
+        credentials: auth ? 'include' : 'omit',
+        headers: {
+          Accept: 'application/json',
+          ...(options.headers || {}),
+        },
+      })
+    }
+    catch (err: any) {
+      lastErr = err
+      if (!isRetryableAdminError(err) || attempt === retries) break
+      await wait(400 * (attempt + 1))
+    }
   }
-  catch (err: any) {
-    const message = readErrorMessage(err)
-    const wrapped: any = new Error(message)
-    wrapped.statusCode = err?.statusCode || err?.status
-    wrapped.data = err?.data
-    throw wrapped
-  }
+
+  const message = readErrorMessage(lastErr)
+  const wrapped: any = new Error(message)
+  wrapped.statusCode = lastErr?.statusCode || lastErr?.status
+  wrapped.data = lastErr?.data
+  throw wrapped
+}
+
+function isGenericServerError(text: string): boolean {
+  return /^(server error|internal server error|fetch error)$/i.test(String(text || '').trim())
+}
+
+function isRetryableAdminError(err: any): boolean {
+  const status = err?.statusCode || err?.status
+  if (!status) return true
+  return status >= 500
+}
+
+function wait(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 function isErrorEnvelope(raw: any): boolean {

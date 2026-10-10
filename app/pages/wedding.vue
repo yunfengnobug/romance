@@ -168,7 +168,7 @@ onMounted(() => {
     position: relative;
     height: 280px;
     overflow: hidden;
-    background: #c9b8a8;
+    background: #d4b8a4;
   }
 
   &__hero-img {
@@ -184,7 +184,7 @@ onMounted(() => {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(to top, rgba(32, 24, 20, 0.45), rgba(32, 24, 20, 0.15));
+    background: linear-gradient(to top, rgba(72, 38, 28, 0.42), rgba(92, 52, 36, 0.12));
     color: #fff;
     text-align: center;
     padding: 16px;
@@ -206,21 +206,36 @@ onMounted(() => {
   }
 
   &__story {
-    padding: 36px 20px 12px;
+    margin: 24px 16px 8px;
+    padding: 32px 24px 28px;
     text-align: center;
+    background: $color-paper;
+    border: 1px solid rgba($color-maple, 0.1);
+    border-radius: 18px;
+    box-shadow: 0 10px 28px rgba(196, 90, 66, 0.05);
 
     h2 {
       margin: 0 0 12px;
       font-size: 18px;
       letter-spacing: 0.2em;
       font-weight: 600;
+
+      &::after {
+        content: '';
+        display: block;
+        width: 28px;
+        height: 2px;
+        margin: 12px auto 0;
+        background: $color-maple;
+        border-radius: 2px;
+      }
     }
 
     p {
       margin: 0 auto;
       max-width: 36em;
       font-size: 15px;
-      line-height: 1.9;
+      line-height: 1.95;
       color: $color-muted;
     }
   }
@@ -233,7 +248,7 @@ onMounted(() => {
     margin: 0 0 16px;
     padding: 8px 10px;
     border-radius: 6px;
-    background: $color-like-bg;
+    background: rgba($color-maple, 0.08);
     color: $color-muted;
     font-size: 12px;
     line-height: 1.5;
@@ -253,18 +268,19 @@ onMounted(() => {
   }
 
   &__tab {
-    border: 1px solid $color-line;
+    border: 1px solid rgba($color-maple, 0.14);
     background: $color-paper;
     color: $color-muted;
-    padding: 6px 16px;
+    padding: 7px 18px;
     border-radius: 999px;
     font-size: 13px;
     cursor: pointer;
+    box-shadow: 0 2px 8px rgba(196, 90, 66, 0.04);
 
     &.is-active {
       border-color: $color-maple;
       color: $color-maple-deep;
-      background: rgba($color-maple, 0.1);
+      background: rgba($color-maple, 0.12);
       font-weight: 600;
     }
   }
@@ -283,7 +299,7 @@ onMounted(() => {
     border: 0;
     background: $color-like-bg;
     overflow: hidden;
-    border-radius: 8px;
+    border-radius: 10px;
     cursor: zoom-in;
     break-inside: avoid;
     page-break-inside: avoid;
@@ -306,8 +322,9 @@ onMounted(() => {
     color: $color-muted;
     font-size: 14px;
     background: $color-paper;
-    border: 1px dashed $color-line;
-    border-radius: 12px;
+    border: 1px dashed rgba($color-maple, 0.22);
+    border-radius: 14px;
+    box-shadow: 0 8px 20px rgba(196, 90, 66, 0.04);
   }
 
   &__retry {

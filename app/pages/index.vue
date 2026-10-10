@@ -59,7 +59,14 @@ useHead({
 
   &__hero {
     text-align: center;
-    padding: 36px 8px 40px;
+    padding: 40px 20px 44px;
+    margin-bottom: 8px;
+    background:
+      radial-gradient(ellipse 80% 70% at 50% 0%, rgba($color-maple, 0.1), transparent 68%),
+      $color-paper;
+    border: 1px solid rgba($color-maple, 0.1);
+    border-radius: 22px;
+    box-shadow: 0 10px 28px rgba(196, 90, 66, 0.06);
   }
 
   &__eyebrow {
@@ -81,10 +88,10 @@ useHead({
     &::after {
       content: '';
       display: block;
-      width: 36px;
-      height: 2px;
+      width: 42px;
+      height: 3px;
       margin: 16px auto 0;
-      background: $color-maple;
+      background: linear-gradient(90deg, transparent, $color-maple, transparent);
       border-radius: 2px;
     }
   }
@@ -93,7 +100,7 @@ useHead({
     margin: 0 auto;
     max-width: 28em;
     font-size: 16px;
-    line-height: 1.8;
+    line-height: 1.85;
     color: $color-muted;
   }
 
@@ -102,15 +109,18 @@ useHead({
     align-items: center;
     justify-content: center;
     gap: 2px;
-    margin-top: 18px;
-    padding: 4px 2px;
+    margin-top: 20px;
+    padding: 6px 14px;
     font-size: 12px;
     letter-spacing: 0.16em;
     color: $color-maple;
-    transition: color 0.2s ease;
+    background: rgba($color-maple, 0.07);
+    border-radius: 999px;
+    transition: color 0.2s ease, background 0.2s ease;
 
     &:hover {
       color: $color-maple-deep;
+      background: rgba($color-maple, 0.12);
     }
   }
 
@@ -128,13 +138,14 @@ useHead({
     display: block;
     overflow: hidden;
     background: $color-paper;
-    border: 1px solid $color-line;
-    border-radius: 16px;
+    border: 1px solid rgba($color-maple, 0.1);
+    border-radius: 18px;
+    box-shadow: 0 8px 22px rgba(196, 90, 66, 0.05);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 
     &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 28px rgba(58, 50, 44, 0.08);
+      transform: translateY(-3px);
+      box-shadow: 0 16px 32px rgba(196, 90, 66, 0.1);
     }
   }
 
@@ -142,10 +153,11 @@ useHead({
     width: 100%;
     height: 180px;
     object-fit: cover;
+    filter: saturate(0.92) sepia(0.08);
   }
 
   &__card-body {
-    padding: 18px 18px 20px;
+    padding: 20px 20px 22px;
 
     h2 {
       margin: 0 0 8px;
@@ -157,7 +169,7 @@ useHead({
     p {
       margin: 0 0 12px;
       font-size: 14px;
-      line-height: 1.7;
+      line-height: 1.75;
       color: $color-muted;
     }
   }
