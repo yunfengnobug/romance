@@ -1,5 +1,5 @@
-// 「日子」页静态文案：从 yzre.cn/love/story 迁来。
-// 视觉对齐原站粉红纪念页；时间线保留在一起 / 订婚 / 结婚。
+// 「日子」页静态文案：从 yunfeng /love/story（love-story-content）迁入。
+// 时间线在原站「我们在一起了」之外补上订婚、结婚。
 
 /** 在一起起始日（上海日历日） */
 export const STORY_START_DATE_KEY = '2025-06-20'
