@@ -39,11 +39,13 @@
   }
 
   &__footer {
-    padding: 28px 20px 36px;
+    padding: 32px 20px 40px;
     text-align: center;
     color: $color-muted;
     font-size: 12px;
     letter-spacing: 0.08em;
+    border-top: 1px solid rgba($color-maple, 0.1);
+    background: linear-gradient(180deg, transparent, rgba($color-maple, 0.05));
   }
 
   &__copy,

@@ -30,7 +30,16 @@ img {
 }
 
 body {
-  // 页面顶部淡淡的枫红光晕
-  background-image: radial-gradient(ellipse 80% 40% at 50% -10%, rgba($color-maple, 0.12), transparent 60%);
+  // 顶部枫红 + 底部暖杏，让整站不那么空、冷
+  background-image:
+    radial-gradient(ellipse 90% 46% at 50% -12%, rgba($color-maple, 0.18), transparent 62%),
+    radial-gradient(ellipse 70% 36% at 80% 110%, rgba(212, 154, 86, 0.12), transparent 58%),
+    radial-gradient(ellipse 50% 28% at 12% 88%, rgba($color-maple, 0.07), transparent 55%);
   background-attachment: fixed;
+}
+
+// 日子页沿用云枫粉红底，不要叠全站枫红光晕
+body.is-story {
+  background: #fff5f5;
+  background-image: none;
 }

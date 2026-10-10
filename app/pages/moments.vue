@@ -252,13 +252,16 @@ onMounted(async () => {
     margin: 0 auto;
     background: $color-paper;
     min-height: calc(100vh - $header-height - 80px);
-    box-shadow: 0 0 0 1px $color-line;
+    box-shadow:
+      0 0 0 1px rgba($color-maple, 0.08),
+      0 16px 40px rgba(196, 90, 66, 0.07);
+    overflow: hidden;
   }
 
   &__cover {
     position: relative;
     height: 240px;
-    background: #c9b8a8;
+    background: #d4b8a4;
   }
 
   &__cover-img {
@@ -352,7 +355,7 @@ onMounted(async () => {
     margin: 12px 16px 0;
     padding: 8px 10px;
     border-radius: 6px;
-    background: $color-like-bg;
+    background: rgba($color-maple, 0.08);
     color: $color-muted;
     font-size: 12px;
     line-height: 1.5;
@@ -382,10 +385,11 @@ onMounted(async () => {
   }
 
   &__empty {
-    padding: 64px 24px;
+    padding: 72px 24px;
     text-align: center;
     color: $color-muted;
     font-size: 14px;
+    line-height: 1.8;
   }
 
   &__retry {
@@ -402,6 +406,10 @@ onMounted(async () => {
 @media (min-width: 680px) {
   .moments {
     padding: 16px 16px 24px;
+
+    &__phone {
+      border-radius: 16px;
+    }
 
     &__cover {
       height: 280px;
