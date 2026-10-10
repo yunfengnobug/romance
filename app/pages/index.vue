@@ -12,13 +12,7 @@ useHead({
       <p class="home__lead">
         这是王俊杰与李朝新的小站。朋友圈记下日常，婚纱照留下并肩的光。
       </p>
-      <NuxtLink to="/story" class="home__whisper">
-        <span>在一起</span>
-        <span class="home__whisper-dot">·</span>
-        <span>订婚</span>
-        <span class="home__whisper-dot">·</span>
-        <span>结婚</span>
-      </NuxtLink>
+      <NuxtLink to="/story" class="home__whisper">余生请多指教</NuxtLink>
     </section>
 
     <section class="home__entries">
@@ -66,7 +60,7 @@ useHead({
       $color-paper;
     border: 1px solid rgba($color-maple, 0.1);
     border-radius: 22px;
-    box-shadow: 0 10px 28px rgba(196, 90, 66, 0.06);
+    box-shadow: 0 10px 28px rgba($color-maple, 0.06);
   }
 
   &__eyebrow {
@@ -108,7 +102,6 @@ useHead({
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 2px;
     margin-top: 20px;
     padding: 6px 14px;
     font-size: 12px;
@@ -124,11 +117,6 @@ useHead({
     }
   }
 
-  &__whisper-dot {
-    margin: 0 6px;
-    color: rgba($color-maple, 0.45);
-  }
-
   &__entries {
     display: grid;
     gap: 16px;
@@ -140,12 +128,12 @@ useHead({
     background: $color-paper;
     border: 1px solid rgba($color-maple, 0.1);
     border-radius: 18px;
-    box-shadow: 0 8px 22px rgba(196, 90, 66, 0.05);
+    box-shadow: 0 8px 22px rgba($color-maple, 0.05);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 
     &:hover {
       transform: translateY(-3px);
-      box-shadow: 0 16px 32px rgba(196, 90, 66, 0.1);
+      box-shadow: 0 16px 32px rgba($color-maple, 0.1);
     }
   }
 
@@ -153,7 +141,7 @@ useHead({
     width: 100%;
     height: 180px;
     object-fit: cover;
-    filter: saturate(0.92) sepia(0.08);
+    filter: saturate(0.98);
   }
 
   &__card-body {

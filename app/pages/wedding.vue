@@ -168,7 +168,7 @@ onMounted(() => {
     position: relative;
     height: 280px;
     overflow: hidden;
-    background: #d4b8a4;
+    background: #dcc6bc;
   }
 
   &__hero-img {
@@ -212,7 +212,7 @@ onMounted(() => {
     background: $color-paper;
     border: 1px solid rgba($color-maple, 0.1);
     border-radius: 18px;
-    box-shadow: 0 10px 28px rgba(196, 90, 66, 0.05);
+    box-shadow: 0 10px 28px rgba($color-maple, 0.05);
 
     h2 {
       margin: 0 0 12px;
@@ -275,7 +275,7 @@ onMounted(() => {
     border-radius: 999px;
     font-size: 13px;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(196, 90, 66, 0.04);
+    box-shadow: 0 2px 8px rgba($color-maple, 0.04);
 
     &.is-active {
       border-color: $color-maple;
@@ -324,7 +324,7 @@ onMounted(() => {
     background: $color-paper;
     border: 1px dashed rgba($color-maple, 0.22);
     border-radius: 14px;
-    box-shadow: 0 8px 20px rgba(196, 90, 66, 0.04);
+    box-shadow: 0 8px 20px rgba($color-maple, 0.04);
   }
 
   &__retry {

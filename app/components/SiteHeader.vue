@@ -53,7 +53,7 @@ function isActive(path: string) {
   background: rgba($color-paper, 0.94);
   backdrop-filter: blur(14px);
   border-bottom: 1px solid rgba($color-maple, 0.12);
-  box-shadow: 0 8px 24px rgba(196, 90, 66, 0.05);
+  box-shadow: 0 8px 24px rgba($color-maple, 0.05);
 
   &__inner {
     max-width: 960px;
