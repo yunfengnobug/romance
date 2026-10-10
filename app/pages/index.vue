@@ -12,13 +12,7 @@ useHead({
       <p class="home__lead">
         这是王俊杰与李朝新的小站。朋友圈记下日常，婚纱照留下并肩的光。
       </p>
-      <NuxtLink to="/story" class="home__whisper">
-        <span>在一起</span>
-        <span class="home__whisper-dot">·</span>
-        <span>订婚</span>
-        <span class="home__whisper-dot">·</span>
-        <span>结婚</span>
-      </NuxtLink>
+      <NuxtLink to="/story" class="home__whisper">余生请多指教</NuxtLink>
     </section>
 
     <section class="home__entries">
@@ -108,7 +102,6 @@ useHead({
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 2px;
     margin-top: 20px;
     padding: 6px 14px;
     font-size: 12px;
@@ -122,11 +115,6 @@ useHead({
       color: $color-maple-deep;
       background: rgba($color-maple, 0.12);
     }
-  }
-
-  &__whisper-dot {
-    margin: 0 6px;
-    color: rgba($color-maple, 0.45);
   }
 
   &__entries {
