@@ -12,7 +12,7 @@
 // Tab = 「全部」+ categories.label。公开接口不带 cookie。
 // 接口未合并（404）或空列表：空相册，不回退 Unsplash。
 
-import { adminApiBase, pickList, pickUrl, readErrorMessage, unwrapPayload } from './momentsApi'
+import { adminPublicGet, pickList, pickUrl, readErrorMessage, unwrapPayload } from './momentsApi'
 
 const CATEGORIES_PATH = '/api/public/wedding/categories'
 const PHOTOS_PATH = '/api/public/wedding/photos'
@@ -170,13 +170,8 @@ function looksLikeYunfengBuckets(data: any): boolean {
 }
 
 async function weddingPublicGet(path: string) {
-  const url = `${adminApiBase()}${path}`
   try {
-    const data = await $fetch(url, {
-      method: 'GET',
-      credentials: 'omit',
-      headers: { Accept: 'application/json' },
-    })
+    const data = await adminPublicGet(path)
     return { data, missing: false, error: null }
   }
   catch (err: any) {

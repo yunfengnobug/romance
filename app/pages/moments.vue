@@ -76,12 +76,26 @@ async function loadPublic(silent = false) {
   }
 
   try {
-    const [profileRaw, feedRaw] = await Promise.all([
+    const [profileResult, feedResult] = await Promise.allSettled([
       fetchMomentsProfile(),
       fetchMomentsFeed(),
     ])
-    profile.value = mapProfile(profileRaw, mockProfile)
-    posts.value = feedRaw.map((item: any) => mapMomentPost(item, profile.value.avatar))
+    if (profileResult.status === 'fulfilled') {
+      profile.value = mapProfile(profileResult.value, mockProfile)
+    }
+    if (feedResult.status === 'fulfilled') {
+      posts.value = feedResult.value.map((item: any) => mapMomentPost(item, profile.value.avatar))
+      loadError.value = ''
+      return
+    }
+    const err = feedResult.reason
+    if (import.meta.dev && isUnreachableError(err)) {
+      applyMock()
+      loadError.value = ''
+      return
+    }
+    posts.value = []
+    loadError.value = readErrorMessage(err)
   }
   catch (err: any) {
     if (import.meta.dev && isUnreachableError(err)) {
