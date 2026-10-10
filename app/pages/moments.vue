@@ -268,14 +268,14 @@ onMounted(async () => {
     min-height: calc(100vh - $header-height - 80px);
     box-shadow:
       0 0 0 1px rgba($color-maple, 0.08),
-      0 16px 40px rgba(196, 90, 66, 0.07);
+      0 16px 40px rgba($color-maple, 0.07);
     overflow: hidden;
   }
 
   &__cover {
     position: relative;
     height: 240px;
-    background: #d4b8a4;
+    background: #dcc6bc;
   }
 
   &__cover-img {

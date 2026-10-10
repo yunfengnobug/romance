@@ -66,7 +66,7 @@ useHead({
       $color-paper;
     border: 1px solid rgba($color-maple, 0.1);
     border-radius: 22px;
-    box-shadow: 0 10px 28px rgba(196, 90, 66, 0.06);
+    box-shadow: 0 10px 28px rgba($color-maple, 0.06);
   }
 
   &__eyebrow {
@@ -140,12 +140,12 @@ useHead({
     background: $color-paper;
     border: 1px solid rgba($color-maple, 0.1);
     border-radius: 18px;
-    box-shadow: 0 8px 22px rgba(196, 90, 66, 0.05);
+    box-shadow: 0 8px 22px rgba($color-maple, 0.05);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 
     &:hover {
       transform: translateY(-3px);
-      box-shadow: 0 16px 32px rgba(196, 90, 66, 0.1);
+      box-shadow: 0 16px 32px rgba($color-maple, 0.1);
     }
   }
 
@@ -153,7 +153,7 @@ useHead({
     width: 100%;
     height: 180px;
     object-fit: cover;
-    filter: saturate(0.92) sepia(0.08);
+    filter: saturate(0.98);
   }
 
   &__card-body {
