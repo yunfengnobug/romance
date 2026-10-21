@@ -25,9 +25,9 @@ function displaySrc(src: string) {
   return buildPhotoThumbUrl(src, thumbWidth.value)
 }
 
-// 点击图片打开预览（灯箱拿原图 URL，再按视口出 webp）
-function onPreview(src: string) {
-  emit('preview', src)
+// 点击图片打开预览，带上在这一组里的序号（灯箱拿原图 URL，再按视口出 webp）
+function onPreview(src: string, index: number) {
+  emit('preview', src, index)
 }
 </script>
 
@@ -44,7 +44,7 @@ function onPreview(src: string) {
       :key="`${src}-${index}`"
       type="button"
       class="image-grid__cell"
-      @click="onPreview(src)"
+      @click="onPreview(src, index)"
     >
       <img :src="displaySrc(src)" :alt="`图片 ${index + 1}`" class="image-grid__img" />
     </button>

@@ -23,9 +23,10 @@ const likeText = computed(() => {
   return names.join('、')
 })
 
-// 把点击的图片交给页面打开灯箱
-function onPreview(src: string) {
-  emit('preview', src)
+// 把这一条动态的整组图片交给页面，灯箱只在组内翻页
+function onPreview(src: string, index: number) {
+  const images = Array.isArray(props.post?.images) ? props.post.images : []
+  emit('preview', { src, index, images })
 }
 
 // 删除前先确认，避免误触
