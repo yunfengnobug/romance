@@ -12,7 +12,7 @@ const loading = ref(true)
 const loadError = ref('')
 const usingMock = ref(false)
 const activeGroup = ref('all')
-const previewSrc = ref('')
+const preview = ref<any>(null)
 const heroRef = ref<HTMLElement | null>(null)
 const gridRef = ref<HTMLElement | null>(null)
 
@@ -50,14 +50,21 @@ function selectGroup(key: string) {
   activeGroup.value = key
 }
 
-// 打开图片预览（传原图 URL，灯箱按视口实测宽出 webp）
-function openPreview(src: string) {
-  previewSrc.value = src
+// 打开当前分组里的照片（全部或后台分类），翻页不跨出这一组
+function openPreview(index: number) {
+  const photos = filteredPhotos.value || []
+  const photo = photos[index]
+  if (!photo?.src) return
+  preview.value = {
+    images: photos.map((item: any) => item.src),
+    alts: photos.map((item: any) => item.alt || '预览图片'),
+    index,
+  }
 }
 
 // 关闭图片预览
 function closePreview() {
-  previewSrc.value = ''
+  preview.value = null
 }
 
 // 当前选中的分类如果已被后台删掉，回到全部
@@ -140,11 +147,11 @@ onMounted(() => {
       </div>
       <div v-else-if="filteredPhotos.length" ref="gridRef" class="wedding__grid">
         <button
-          v-for="photo in filteredPhotos"
+          v-for="(photo, photoIndex) in filteredPhotos"
           :key="photo.id"
           type="button"
           class="wedding__cell"
-          @click="openPreview(photo.src)"
+          @click="openPreview(photoIndex)"
         >
           <img :src="buildPhotoThumbUrl(photo.src, thumbWidth)" :alt="photo.alt" loading="lazy" />
         </button>
@@ -154,7 +161,13 @@ onMounted(() => {
       </p>
     </section>
 
-    <ImageLightbox v-if="previewSrc" :src="previewSrc" @close="closePreview" />
+    <ImageLightbox
+      v-if="preview"
+      :images="preview.images"
+      :alts="preview.alts"
+      :index="preview.index"
+      @close="closePreview"
+    />
   </div>
 </template>
 

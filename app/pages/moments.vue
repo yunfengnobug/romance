@@ -25,7 +25,7 @@ const posts = ref<any[]>([])
 const loading = ref(true)
 const loadError = ref('')
 const usingMock = ref(false)
-const previewSrc = ref('')
+const preview = ref<any>(null)
 const composerOpen = ref(false)
 const sessionError = ref('')
 const coverRef = ref<HTMLElement | null>(null)
@@ -43,15 +43,28 @@ const avatarWidth = usePhotoDisplayWidth(avatarRef, {
 const coverDisplay = computed(() => buildPhotoHeroUrl(profile.value.cover, coverWidth.value))
 const avatarDisplay = computed(() => buildPhotoAvatarUrl(profile.value.avatar, avatarWidth.value))
 
-// 打开图片预览（传原图 URL；视频不进灯箱）
-function openPreview(src: string) {
+// 打开这一条动态里的图片（视频不进灯箱）；翻页范围就是这条动态的图
+function openPreview(payload: any) {
+  const raw = Array.isArray(payload?.images) ? payload.images : []
+  const images = raw
+    .map((item: any) => String(item || '').trim())
+    .filter((item: string) => item && !isLikelyVideoUrl(item))
+  if (!images.length) return
+  const src = String(payload?.src || '').trim()
   if (!src || isLikelyVideoUrl(src)) return
-  previewSrc.value = src
+  let index = Number(payload?.index)
+  if (!Number.isInteger(index) || images[index] !== src) index = images.indexOf(src)
+  if (index < 0) index = 0
+  preview.value = {
+    images,
+    alts: images.map((_item: string, i: number) => `图片 ${i + 1}`),
+    index,
+  }
 }
 
 // 关闭图片预览
 function closePreview() {
-  previewSrc.value = ''
+  preview.value = null
 }
 
 // 开发回退：用仓库里的示例数据
@@ -246,7 +259,13 @@ onMounted(async () => {
       <p v-else class="moments__empty">还没有动态。</p>
     </div>
 
-    <ImageLightbox v-if="previewSrc" :src="previewSrc" @close="closePreview" />
+    <ImageLightbox
+      v-if="preview"
+      :images="preview.images"
+      :alts="preview.alts"
+      :index="preview.index"
+      @close="closePreview"
+    />
     <MomentsLogin v-if="loginOpen" @close="closeLogin" @success="onLoggedIn" />
     <MomentsComposer
       v-if="composerOpen"
